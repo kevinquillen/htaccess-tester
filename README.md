@@ -19,32 +19,6 @@ This plugin provides an integrated way to test Apache `.htaccess` rewrite rules 
 - Filter and analyze rule evaluation results
 - Automatic retry for transient server errors
 
-## Installation
-
-### From JetBrains Marketplace
-
-*Coming soon*
-
-### Manual Installation
-
-1. Download the latest release `.zip` file from the [Releases](https://github.com/kevinquillen/htaccess-tester/releases) page
-2. In your IDE, go to **Settings/Preferences** → **Plugins** → **⚙️** → **Install Plugin from Disk...**
-3. Select the downloaded `.zip` file
-4. Restart the IDE when prompted
-
-### Build from Source
-
-```bash
-# Clone the repository
-git clone https://github.com/kevinquillen/htaccess-tester.git
-cd htaccess-tester
-
-# Build the plugin (requires Java 17)
-./gradlew buildPlugin
-
-# The plugin ZIP will be in build/distributions/
-```
-
 ## Usage
 
 ### Opening the Tool Window
@@ -124,27 +98,6 @@ Check your internet connection. The default timeout is 10 seconds.
 
 ### Plugin not loading
 Ensure you're using a compatible JetBrains IDE version (2024.1 or later).
-
-## Development
-
-### Running Tests
-
-```bash
-# Requires Java 17
-JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew test
-```
-
-### Running the Plugin in a Sandbox IDE
-
-```bash
-JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew runIde
-```
-
-### Verifying Plugin Compatibility
-
-```bash
-JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew verifyPlugin
-```
 
 ## License
 
