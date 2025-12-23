@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.kevinquillen"
-version = "0.1.0"
+version = "1.0.0"
 
 kotlin {
     jvmToolchain(17)
@@ -72,7 +72,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            <h3>0.1.0</h3>
+            <h3>1.0.0</h3>
             <ul>
                 <li>Initial release</li>
                 <li>Test .htaccess rewrite rules against htaccess.madewithlove.com API</li>
