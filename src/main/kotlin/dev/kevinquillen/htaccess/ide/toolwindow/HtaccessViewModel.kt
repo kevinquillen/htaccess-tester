@@ -29,6 +29,8 @@ class HtaccessViewModel(
         private set
     var lastError: String? = null
         private set
+    var lastException: Exception? = null
+        private set
 
     // Callbacks for UI updates
     var onStateChanged: (() -> Unit)? = null
@@ -107,6 +109,7 @@ class HtaccessViewModel(
 
         isLoading = true
         lastError = null
+        lastException = null
         notifyStateChanged()
 
         scope.launch {
@@ -119,9 +122,11 @@ class HtaccessViewModel(
                 val result = testService.test(request)
                 lastResult = result
                 lastError = null
+                lastException = null
                 onComplete?.invoke(result, null)
             } catch (e: Exception) {
                 lastError = "Test failed: ${e.message}"
+                lastException = e
                 lastResult = null
                 onComplete?.invoke(null, lastError)
             } finally {

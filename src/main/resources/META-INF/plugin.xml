@@ -20,6 +20,8 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <applicationService
+                serviceImplementation="dev.kevinquillen.htaccess.settings.HtaccessSettingsService"/>
         <toolWindow id="Htaccess Tester"
                     anchor="bottom"
                     secondary="true"
