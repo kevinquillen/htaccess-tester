@@ -1,0 +1,36 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Kotlin
+*.class
+*.log
+*.ctxt
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
+
+# Editor backups
+*~
+*.swp
+*.swo
+
+# Local environment
+.env
+.env.local
+
+# Plan files (development only)
+PLAN.md
+PLANS.md
