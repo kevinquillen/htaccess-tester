@@ -706,7 +706,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
                     !value.isSupported -> "\u2796"       // Horizontal bar - not supported (caution)
                     !value.wasReached -> "\u2796"        // Horizontal bar - not reached (caution)
                     value.isMet -> "\u2705"              // Green check - met
-                    else -> "\u2796"                     // Horizontal bar - not met
+                    else -> "\u274C"                     // Red X - not met
                 }
 
                 if (!isSelected) {
@@ -715,7 +715,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
                         !value.isSupported -> JBColor(0xB8860B, 0xDAA520) // Dark/Light goldenrod (yellow)
                         !value.wasReached -> JBColor(0xB8860B, 0xDAA520)  // Dark/Light goldenrod (yellow)
                         value.isMet -> JBColor(0x228B22, 0x90EE90)        // Forest/Light green
-                        else -> JBColor.GRAY
+                        else -> JBColor.RED                               // Red - not met
                     }
                 }
 
