@@ -5,5 +5,6 @@ data class ResultLine(
     val message: String?,
     val isMet: Boolean,
     val isValid: Boolean,
-    val wasReached: Boolean
+    val wasReached: Boolean,
+    val isSupported: Boolean = true
 )

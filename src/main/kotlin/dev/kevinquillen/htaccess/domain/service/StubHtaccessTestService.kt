@@ -27,6 +27,7 @@ class StubHtaccessTestService : HtaccessTestService {
 
         return TestResult(
             outputUrl = outputUrl,
+            outputStatusCode = if (request.rules.contains("[R=301", ignoreCase = true)) 301 else null,
             lines = lines,
             rawResponse = rawResponse
         )
