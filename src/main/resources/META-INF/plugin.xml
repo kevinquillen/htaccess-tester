@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>dev.kevinquillen.htaccess-tester</id>
+    <id>com.github.kevinquillen.htaccess-tester</id>
     <name>Htaccess Tester</name>
     <vendor>Kevin Quillen</vendor>
 
@@ -21,11 +21,11 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationService
-                serviceImplementation="dev.kevinquillen.htaccess.settings.HtaccessSettingsService"/>
+                serviceImplementation="com.github.kevinquillen.htaccess.settings.HtaccessSettingsService"/>
         <toolWindow id="Htaccess Tester"
                     anchor="bottom"
                     secondary="true"
-                    factoryClass="dev.kevinquillen.htaccess.ide.toolwindow.HtaccessToolWindowFactory"
+                    factoryClass="com.github.kevinquillen.htaccess.ide.toolwindow.HtaccessToolWindowFactory"
                     icon="AllIcons.General.Web"/>
 
         <notificationGroup id="Htaccess Tester"
@@ -36,14 +36,14 @@
         <group id="HtaccessTester.ToolsMenu" text="Htaccess Tester" popup="true">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <action id="HtaccessTester.OpenToolWindow"
-                    class="dev.kevinquillen.htaccess.ide.actions.OpenHtaccessTesterAction"
+                    class="com.github.kevinquillen.htaccess.ide.actions.OpenHtaccessTesterAction"
                     text="Open Tool Window"
                     description="Open the Htaccess Tester tool window"/>
         </group>
 
         <!-- Editor context menu action for .htaccess files -->
         <action id="HtaccessTester.TestFromEditor"
-                class="dev.kevinquillen.htaccess.ide.editor.RunHtaccessFromEditorAction"
+                class="com.github.kevinquillen.htaccess.ide.editor.RunHtaccessFromEditorAction"
                 text="Test with Htaccess Tester"
                 description="Test this .htaccess file with Htaccess Tester"
                 icon="AllIcons.Actions.Execute">

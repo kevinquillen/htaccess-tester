@@ -4,7 +4,7 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.2.1"  // Note: 2.10.5 available but requires Gradle config changes
 }
 
-group = "dev.kevinquillen"
+group = "com.github.kevinquillen"
 version = "0.1.0"
 
 kotlin {
@@ -48,7 +48,7 @@ dependencies {
 
 intellijPlatform {
     pluginConfiguration {
-        id = "dev.kevinquillen.htaccess-tester"
+        id = "com.github.kevinquillen.htaccess-tester"
         name = "Htaccess Tester"
         version = project.version.toString()
         description = """
