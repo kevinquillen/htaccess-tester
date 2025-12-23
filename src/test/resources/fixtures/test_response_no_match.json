@@ -1,0 +1,22 @@
+{
+  "outputUrl": "https://example.com/page",
+  "outputStatusCode": null,
+  "lines": [
+    {
+      "line": "RewriteEngine On",
+      "message": "The rewrite engine is now enabled",
+      "isMet": true,
+      "isValid": true,
+      "wasReached": true,
+      "isSupported": true
+    },
+    {
+      "line": "RewriteRule ^other-page$ /different [L]",
+      "message": "The rule was not met because the pattern does not match",
+      "isMet": false,
+      "isValid": true,
+      "wasReached": true,
+      "isSupported": true
+    }
+  ]
+}

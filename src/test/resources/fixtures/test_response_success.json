@@ -1,0 +1,22 @@
+{
+  "outputUrl": "https://example.com/new-page",
+  "outputStatusCode": 301,
+  "lines": [
+    {
+      "line": "RewriteEngine On",
+      "message": "The rewrite engine is now enabled",
+      "isMet": true,
+      "isValid": true,
+      "wasReached": true,
+      "isSupported": true
+    },
+    {
+      "line": "RewriteRule ^old-page$ /new-page [R=301,L]",
+      "message": "The rule was met and redirects to /new-page with status 301",
+      "isMet": true,
+      "isValid": true,
+      "wasReached": true,
+      "isSupported": true
+    }
+  ]
+}
