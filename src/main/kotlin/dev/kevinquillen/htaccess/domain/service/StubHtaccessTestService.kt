@@ -1,13 +1,14 @@
 package dev.kevinquillen.htaccess.domain.service
 
 import dev.kevinquillen.htaccess.domain.model.ResultLine
+import dev.kevinquillen.htaccess.domain.model.ShareResult
 import dev.kevinquillen.htaccess.domain.model.TestRequest
 import dev.kevinquillen.htaccess.domain.model.TestResult
 import kotlinx.coroutines.delay
+import java.util.UUID
 
 /**
  * Stub implementation that returns fake responses for UI development.
- * Will be replaced with real HTTP client in Stage 3.
  */
 class StubHtaccessTestService : HtaccessTestService {
 
@@ -30,6 +31,14 @@ class StubHtaccessTestService : HtaccessTestService {
             outputStatusCode = if (request.rules.contains("[R=301", ignoreCase = true)) 301 else null,
             lines = lines,
             rawResponse = rawResponse
+        )
+    }
+
+    override suspend fun share(request: TestRequest): ShareResult {
+        delay(300)
+        val uuid = UUID.randomUUID().toString().take(8)
+        return ShareResult(
+            shareUrl = "https://htaccess.madewithlove.com/?share=stub-$uuid"
         )
     }
 

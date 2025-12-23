@@ -2,6 +2,7 @@ package dev.kevinquillen.htaccess.http
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import dev.kevinquillen.htaccess.domain.model.ShareResult
 import dev.kevinquillen.htaccess.domain.model.TestRequest
 import dev.kevinquillen.htaccess.domain.model.TestResult
 import dev.kevinquillen.htaccess.domain.service.HtaccessTestService
@@ -60,7 +61,7 @@ class HtaccessRemoteClient(
         }
     }
 
-    suspend fun share(request: TestRequest): ShareResponseDto {
+    override suspend fun share(request: TestRequest): ShareResult {
         return withContext(Dispatchers.IO) {
             val requestDto = TestRequestDto(
                 url = request.url,
@@ -76,7 +77,8 @@ class HtaccessRemoteClient(
                 .build()
 
             executeRequest(httpRequest) { responseBody ->
-                gson.fromJson(responseBody, ShareResponseDto::class.java)
+                val dto = gson.fromJson(responseBody, ShareResponseDto::class.java)
+                ShareResult(shareUrl = dto.shareUrl)
             }
         }
     }

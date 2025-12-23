@@ -1,6 +1,9 @@
 package dev.kevinquillen.htaccess.ide.toolwindow
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.JBColor
@@ -8,11 +11,14 @@ import com.intellij.ui.components.*
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import dev.kevinquillen.htaccess.domain.model.ResultLine
+import dev.kevinquillen.htaccess.settings.HtaccessProjectService
+import dev.kevinquillen.htaccess.settings.SavedTestCase
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.datatransfer.StringSelection
 import javax.swing.*
 import javax.swing.table.DefaultTableCellRenderer
 
@@ -41,6 +47,11 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     private val testButton = JButton("Test")
     private val shareButton = JButton("Share")
 
+    // Saved cases components
+    private val savedCasesComboBox = JComboBox<String>()
+    private val saveButton = JButton("Save")
+    private val deleteButton = JButton("Delete")
+
     // Output components
     private val resultUrlLabel = JBLabel("")
     private val traceListModel = DefaultListModel<ResultLine>()
@@ -52,10 +63,8 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         buildUI()
         setupListeners()
         viewModel.onStateChanged = { refreshUI() }
-
-        // Share is disabled until Stage 4
-        shareButton.isEnabled = false
-        shareButton.toolTipText = "Coming in a future update"
+        shareButton.toolTipText = "Share this test case and copy link to clipboard"
+        refreshSavedCases()
     }
 
     private fun buildUI() {
@@ -159,11 +168,27 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     }
 
     private fun buildButtonsPanel(): JPanel {
-        val panel = JPanel(FlowLayout(FlowLayout.LEFT, 10, 0))
+        val panel = JPanel(BorderLayout(10, 0))
+
+        // Test and Share buttons on the left
+        val actionPanel = JPanel(FlowLayout(FlowLayout.LEFT, 10, 0))
         testButton.toolTipText = "Test the URL against the rules"
-        shareButton.toolTipText = "Share this test case (coming soon)"
-        panel.add(testButton)
-        panel.add(shareButton)
+        actionPanel.add(testButton)
+        actionPanel.add(shareButton)
+        panel.add(actionPanel, BorderLayout.WEST)
+
+        // Saved cases on the right
+        val savedCasesPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 5, 0))
+        savedCasesPanel.add(JBLabel("Saved:"))
+        savedCasesComboBox.preferredSize = Dimension(150, savedCasesComboBox.preferredSize.height)
+        savedCasesComboBox.toolTipText = "Load a saved test case"
+        savedCasesPanel.add(savedCasesComboBox)
+        saveButton.toolTipText = "Save current test case"
+        savedCasesPanel.add(saveButton)
+        deleteButton.toolTipText = "Delete selected saved case"
+        savedCasesPanel.add(deleteButton)
+        panel.add(savedCasesPanel, BorderLayout.EAST)
+
         return panel
     }
 
@@ -236,6 +261,14 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
 
         // Test button
         testButton.addActionListener { runTest() }
+
+        // Share button
+        shareButton.addActionListener { runShare() }
+
+        // Saved cases
+        savedCasesComboBox.addActionListener { loadSelectedCase() }
+        saveButton.addActionListener { saveCurrentCase() }
+        deleteButton.addActionListener { deleteSelectedCase() }
     }
 
     private fun runTest() {
@@ -256,10 +289,42 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         }
     }
 
+    private fun runShare() {
+        val validation = viewModel.validate()
+        if (validation is HtaccessViewModel.ValidationResult.Invalid) {
+            Messages.showErrorDialog(
+                project,
+                validation.errors.joinToString("\n"),
+                "Validation Error"
+            )
+            return
+        }
+
+        viewModel.runShare { result, error ->
+            if (error != null) {
+                Messages.showErrorDialog(project, error, "Share Failed")
+            } else if (result != null) {
+                // Copy to clipboard
+                CopyPasteManager.getInstance().setContents(StringSelection(result.shareUrl))
+
+                // Show notification
+                NotificationGroupManager.getInstance()
+                    .getNotificationGroup("Htaccess Tester")
+                    .createNotification(
+                        "Share link copied to clipboard",
+                        result.shareUrl,
+                        NotificationType.INFORMATION
+                    )
+                    .notify(project)
+            }
+        }
+    }
+
     private fun refreshUI() {
-        // Update progress bar
+        // Update progress bar and buttons
         progressBar.isVisible = viewModel.isLoading
         testButton.isEnabled = !viewModel.isLoading
+        shareButton.isEnabled = !viewModel.isLoading
 
         // Update results
         val result = viewModel.lastResult
@@ -276,6 +341,117 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
             resultUrlLabel.text = ""
             traceListModel.clear()
             rawResponseArea.text = viewModel.lastError ?: ""
+        }
+    }
+
+    private fun refreshSavedCases() {
+        val service = HtaccessProjectService.getInstance(project)
+        val cases = service.getSavedTestCases()
+
+        savedCasesComboBox.removeAllItems()
+        savedCasesComboBox.addItem("-- Select --")
+        cases.forEach { savedCasesComboBox.addItem(it.name) }
+
+        deleteButton.isEnabled = false
+    }
+
+    private fun loadSelectedCase() {
+        val selectedName = savedCasesComboBox.selectedItem?.toString()
+        if (selectedName == null || selectedName == "-- Select --") {
+            deleteButton.isEnabled = false
+            return
+        }
+
+        deleteButton.isEnabled = true
+
+        val service = HtaccessProjectService.getInstance(project)
+        val testCase = service.getTestCase(selectedName) ?: return
+
+        // Load into UI
+        urlField.text = testCase.url
+        rulesTextArea.text = testCase.rules
+
+        // Clear and reload server variables
+        while (viewModel.serverVariables.rowCount > 0) {
+            viewModel.serverVariables.removeRow(0)
+        }
+        testCase.serverVariables.forEach { (key, value) ->
+            viewModel.serverVariables.addRow(arrayOf(key, value))
+        }
+
+        // Clear previous results
+        viewModel.lastResult?.let {
+            traceListModel.clear()
+            resultUrlLabel.text = ""
+            rawResponseArea.text = ""
+        }
+    }
+
+    private fun saveCurrentCase() {
+        val validation = viewModel.validate()
+        if (validation is HtaccessViewModel.ValidationResult.Invalid) {
+            Messages.showErrorDialog(
+                project,
+                "Cannot save: ${validation.errors.joinToString(", ")}",
+                "Validation Error"
+            )
+            return
+        }
+
+        val name = Messages.showInputDialog(
+            project,
+            "Enter a name for this test case:",
+            "Save Test Case",
+            null,
+            "",
+            null
+        )
+
+        if (name.isNullOrBlank()) {
+            return
+        }
+
+        val testCase = SavedTestCase(
+            name = name,
+            url = urlField.text,
+            rules = rulesTextArea.text,
+            serverVariables = viewModel.getServerVariablesMap().toMutableMap()
+        )
+
+        val service = HtaccessProjectService.getInstance(project)
+        service.saveTestCase(testCase)
+        refreshSavedCases()
+
+        // Select the newly saved case
+        savedCasesComboBox.selectedItem = name
+
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("Htaccess Tester")
+            .createNotification(
+                "Test case saved",
+                "Saved as \"$name\"",
+                NotificationType.INFORMATION
+            )
+            .notify(project)
+    }
+
+    private fun deleteSelectedCase() {
+        val selectedName = savedCasesComboBox.selectedItem?.toString()
+        if (selectedName == null || selectedName == "-- Select --") {
+            return
+        }
+
+        val confirmed = Messages.showYesNoDialog(
+            project,
+            "Delete test case \"$selectedName\"?",
+            "Confirm Delete",
+            null
+        )
+
+        if (confirmed == Messages.YES) {
+            val service = HtaccessProjectService.getInstance(project)
+            service.deleteTestCase(selectedName)
+            refreshSavedCases()
         }
     }
 

@@ -26,6 +26,9 @@
                     secondary="true"
                     factoryClass="dev.kevinquillen.htaccess.ide.toolwindow.HtaccessToolWindowFactory"
                     icon="AllIcons.General.Web"/>
+
+        <notificationGroup id="Htaccess Tester"
+                           displayType="BALLOON"/>
     </extensions>
 
     <actions>

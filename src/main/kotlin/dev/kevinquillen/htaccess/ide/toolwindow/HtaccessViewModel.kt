@@ -1,5 +1,6 @@
 package dev.kevinquillen.htaccess.ide.toolwindow
 
+import dev.kevinquillen.htaccess.domain.model.ShareResult
 import dev.kevinquillen.htaccess.domain.model.TestRequest
 import dev.kevinquillen.htaccess.domain.model.TestResult
 import dev.kevinquillen.htaccess.domain.service.HtaccessTestService
@@ -124,6 +125,34 @@ class HtaccessViewModel(
                 lastError = "Test failed: ${e.message}"
                 lastResult = null
                 onComplete?.invoke(null, lastError)
+            } finally {
+                isLoading = false
+                notifyStateChanged()
+            }
+        }
+    }
+
+    fun runShare(onComplete: ((ShareResult?, String?) -> Unit)? = null) {
+        val validation = validate()
+        if (validation is ValidationResult.Invalid) {
+            onComplete?.invoke(null, validation.errors.joinToString("\n"))
+            return
+        }
+
+        isLoading = true
+        notifyStateChanged()
+
+        scope.launch {
+            try {
+                val request = TestRequest(
+                    url = url.trim(),
+                    rules = rules,
+                    serverVariables = getServerVariablesMap()
+                )
+                val result = testService.share(request)
+                onComplete?.invoke(result, null)
+            } catch (e: Exception) {
+                onComplete?.invoke(null, "Share failed: ${e.message}")
             } finally {
                 isLoading = false
                 notifyStateChanged()
