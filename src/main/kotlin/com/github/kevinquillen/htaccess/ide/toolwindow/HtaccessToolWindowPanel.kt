@@ -756,7 +756,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
                         !value.isSupported -> JBColor(0xB8860B, 0xDAA520)
                         !value.wasReached -> JBColor.GRAY
                         value.isMet -> JBColor(0x228B22, 0x90EE90)
-                        else -> JBColor.foreground()
+                        else -> JBColor.RED                              // Red - not met
                     }
                 }
             }
