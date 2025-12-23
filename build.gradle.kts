@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.25"
-    id("org.jetbrains.intellij.platform") version "2.2.1"
+    id("org.jetbrains.intellij.platform") version "2.2.1"  // Note: 2.10.5 available but requires Gradle config changes
 }
 
 group = "dev.kevinquillen"
@@ -9,6 +9,18 @@ version = "0.1.0"
 
 kotlin {
     jvmToolchain(17)
+}
+
+// Prevent Kotlin stdlib version conflicts with IntelliJ Platform
+configurations.all {
+    exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+}
+
+repositories {
+    mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
 dependencies {
@@ -19,7 +31,6 @@ dependencies {
 
         pluginVerifier()
         zipSigner()
-        instrumentationTools()
 
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
     }
