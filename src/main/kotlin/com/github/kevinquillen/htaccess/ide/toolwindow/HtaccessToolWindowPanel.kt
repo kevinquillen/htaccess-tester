@@ -66,11 +66,12 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     private val statsLabel = JBLabel("")
     private val traceFilterComboBox = JComboBox(TraceFilter.entries.map { it.displayName }.toTypedArray())
     private val copySummaryButton = JButton("Copy Summary")
+    private val viewRawOutputButton = JButton("View Raw Output")
     private val traceTableModel = ResultLineTableModel()
     private val traceTable = JBTable(traceTableModel)
-    private val rawResponseArea = JBTextArea(5, 40)
     private val progressBar = JProgressBar()
     private var currentFilter = TraceFilter.ALL
+    private var lastRawResponse: String = ""
 
     init {
         buildUI()
@@ -246,7 +247,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         statsLabel.foreground = JBColor.GRAY
         controlsRow.add(statsLabel, BorderLayout.WEST)
 
-        // Filter and copy button on the right
+        // Filter and buttons on the right
         val filterPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 5, 0))
         filterPanel.add(JBLabel("Filter:"))
         traceFilterComboBox.toolTipText = "Filter trace results"
@@ -254,6 +255,9 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         copySummaryButton.toolTipText = "Copy test summary to clipboard"
         copySummaryButton.isEnabled = false
         filterPanel.add(copySummaryButton)
+        viewRawOutputButton.toolTipText = "View the raw JSON response from the API"
+        viewRawOutputButton.isEnabled = false
+        filterPanel.add(viewRawOutputButton)
         controlsRow.add(filterPanel, BorderLayout.EAST)
 
         headerPanel.add(controlsRow, BorderLayout.SOUTH)
@@ -275,20 +279,8 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
 
         val traceScrollPane = JBScrollPane(traceTable)
         traceScrollPane.border = BorderFactory.createTitledBorder("Trace")
-        traceScrollPane.preferredSize = Dimension(400, 120)
-
-        // Raw response (collapsible)
-        rawResponseArea.isEditable = false
-        rawResponseArea.lineWrap = true
-        rawResponseArea.wrapStyleWord = true
-        val rawScrollPane = JBScrollPane(rawResponseArea)
-        rawScrollPane.border = BorderFactory.createTitledBorder("Raw Response")
-        rawScrollPane.preferredSize = Dimension(400, 80)
-
-        // Split pane for trace and raw
-        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, traceScrollPane, rawScrollPane)
-        splitPane.resizeWeight = 0.7
-        panel.add(splitPane, BorderLayout.CENTER)
+        traceScrollPane.preferredSize = Dimension(400, 200)
+        panel.add(traceScrollPane, BorderLayout.CENTER)
 
         return panel
     }
@@ -345,6 +337,9 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
 
         // Copy summary button
         copySummaryButton.addActionListener { copySummary() }
+
+        // View raw output button
+        viewRawOutputButton.addActionListener { showRawOutputDialog() }
 
         // Saved cases
         savedCasesComboBox.addActionListener { loadSelectedCase() }
@@ -435,14 +430,16 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
             // Apply filter and populate trace list
             applyFilter()
 
-            rawResponseArea.text = result.rawResponse
+            lastRawResponse = result.rawResponse
             copySummaryButton.isEnabled = true
+            viewRawOutputButton.isEnabled = true
         } else {
             resultUrlLabel.text = ""
             statsLabel.text = ""
             traceTableModel.clear()
-            rawResponseArea.text = viewModel.lastError ?: ""
+            lastRawResponse = viewModel.lastError ?: ""
             copySummaryButton.isEnabled = false
+            viewRawOutputButton.isEnabled = lastRawResponse.isNotEmpty()
         }
     }
 
@@ -465,6 +462,11 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
                 NotificationType.INFORMATION
             )
             .notify(project)
+    }
+
+    private fun showRawOutputDialog() {
+        if (lastRawResponse.isEmpty()) return
+        RawOutputDialog(project, lastRawResponse).show()
     }
 
     private fun refreshSavedCases() {
@@ -506,7 +508,8 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         viewModel.lastResult?.let {
             traceTableModel.clear()
             resultUrlLabel.text = ""
-            rawResponseArea.text = ""
+            lastRawResponse = ""
+            viewRawOutputButton.isEnabled = false
         }
     }
 
@@ -818,5 +821,52 @@ private class FirstRunNoticeDialog(project: Project) : DialogWrapper(project, tr
         panel.add(JBScrollPane(messageArea), BorderLayout.CENTER)
 
         return panel
+    }
+}
+
+/**
+ * Dialog to display raw JSON response from the API.
+ */
+private class RawOutputDialog(
+    project: Project,
+    private val rawOutput: String
+) : DialogWrapper(project, true) {
+
+    init {
+        title = "Raw API Response"
+        setOKButtonText("Close")
+        setCancelButtonText("Copy to Clipboard")
+        init()
+    }
+
+    override fun createCenterPanel(): JComponent {
+        val panel = JPanel(BorderLayout(0, 10))
+        panel.preferredSize = Dimension(600, 400)
+        panel.border = JBUI.Borders.empty(10)
+
+        val textArea = JBTextArea()
+        textArea.isEditable = false
+        textArea.text = formatJson(rawOutput)
+        textArea.caretPosition = 0
+
+        val scrollPane = JBScrollPane(textArea)
+        panel.add(scrollPane, BorderLayout.CENTER)
+
+        return panel
+    }
+
+    override fun doCancelAction() {
+        CopyPasteManager.getInstance().setContents(StringSelection(rawOutput))
+        super.doCancelAction()
+    }
+
+    private fun formatJson(json: String): String {
+        return try {
+            val gson = com.google.gson.GsonBuilder().setPrettyPrinting().create()
+            val element = com.google.gson.JsonParser.parseString(json)
+            gson.toJson(element)
+        } catch (e: Exception) {
+            json
+        }
     }
 }
