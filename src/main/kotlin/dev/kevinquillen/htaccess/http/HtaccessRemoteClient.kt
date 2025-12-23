@@ -49,7 +49,7 @@ class HtaccessRemoteClient(
 
             val jsonBody = gson.toJson(requestDto)
             val httpRequest = Request.Builder()
-                .url("$baseUrl/")
+                .url(baseUrl)
                 .post(jsonBody.toRequestBody(jsonMediaType))
                 .header("Content-Type", "application/json")
                 .build()

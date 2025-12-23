@@ -14,7 +14,7 @@ https://htaccess.madewithlove.com/api
 
 Tests `.htaccess` rewrite rules against a given URL.
 
-**Endpoint:** `POST /`
+**Endpoint:** `POST /api` (no trailing slash - the server returns 405 with a trailing slash)
 
 **Headers:**
 ```
