@@ -2,12 +2,10 @@ package dev.kevinquillen.htaccess.http
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
-import dev.kevinquillen.htaccess.domain.model.ShareResult
 import dev.kevinquillen.htaccess.domain.model.TestRequest
 import dev.kevinquillen.htaccess.domain.model.TestResult
 import dev.kevinquillen.htaccess.domain.service.HtaccessTestService
 import dev.kevinquillen.htaccess.http.dto.ErrorResponseDto
-import dev.kevinquillen.htaccess.http.dto.ShareResponseDto
 import dev.kevinquillen.htaccess.http.dto.TestRequestDto
 import dev.kevinquillen.htaccess.http.dto.TestResponseDto
 import dev.kevinquillen.htaccess.http.mapper.ResponseMapper
@@ -57,28 +55,6 @@ class HtaccessRemoteClient(
             executeRequest(httpRequest) { responseBody ->
                 val responseDto = gson.fromJson(responseBody, TestResponseDto::class.java)
                 ResponseMapper.toDomain(responseDto, responseBody)
-            }
-        }
-    }
-
-    override suspend fun share(request: TestRequest): ShareResult {
-        return withContext(Dispatchers.IO) {
-            val requestDto = TestRequestDto(
-                url = request.url,
-                htaccess = request.rules,
-                serverVariables = request.serverVariables
-            )
-
-            val jsonBody = gson.toJson(requestDto)
-            val httpRequest = Request.Builder()
-                .url("$baseUrl/share")
-                .post(jsonBody.toRequestBody(jsonMediaType))
-                .header("Content-Type", "application/json")
-                .build()
-
-            executeRequest(httpRequest) { responseBody ->
-                val dto = gson.fromJson(responseBody, ShareResponseDto::class.java)
-                ShareResult(shareUrl = dto.shareUrl)
             }
         }
     }

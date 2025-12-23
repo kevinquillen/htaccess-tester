@@ -84,49 +84,6 @@ Content-Type: application/json
 
 ---
 
-### Share Test Case
-
-Creates a shareable link for a test configuration.
-
-**Endpoint:** `POST /share`
-
-**Headers:**
-```
-Content-Type: application/json
-```
-
-**Request Body:**
-```json
-{
-  "url": "https://example.com/test",
-  "htaccess": "RewriteRule ^test$ /result [L]",
-  "serverVariables": {}
-}
-```
-
-**Response (Success - 200):**
-```json
-{
-  "shareUrl": "https://htaccess.madewithlove.com/?share=abc123-uuid"
-}
-```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `shareUrl` | string | The URL to share this test configuration |
-
----
-
-### Retrieve Shared Test Case
-
-Retrieves a previously shared test configuration.
-
-**Endpoint:** `GET /share?share={uuid}`
-
-**Response:** Returns the saved test configuration (structure TBD based on actual usage).
-
----
-
 ## Error Responses
 
 ### Validation Error (400)
@@ -164,17 +121,6 @@ curl -X POST https://htaccess.madewithlove.com/api \
   -d '{
     "url": "https://example.com/old-page",
     "htaccess": "RewriteEngine On\nRewriteRule ^old-page$ /new-page [R=301,L]",
-    "serverVariables": {}
-  }'
-```
-
-### Share Request
-```bash
-curl -X POST https://htaccess.madewithlove.com/api/share \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://example.com/test",
-    "htaccess": "RewriteRule ^test$ /result [L]",
     "serverVariables": {}
   }'
 ```

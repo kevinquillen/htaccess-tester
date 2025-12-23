@@ -5,7 +5,6 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
-import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.JBColor
@@ -21,7 +20,6 @@ import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.datatransfer.StringSelection
 import javax.swing.*
 import javax.swing.table.DefaultTableCellRenderer
 
@@ -50,7 +48,6 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
 
     // Action buttons
     private val testButton = JButton("Test")
-    private val shareButton = JButton("Share")
 
     // Saved cases components
     private val savedCasesComboBox = JComboBox<String>()
@@ -69,7 +66,6 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         setupListeners()
         setupEditorListener()
         viewModel.onStateChanged = { refreshUI() }
-        shareButton.toolTipText = "Share this test case and copy link to clipboard"
         refreshSavedCases()
         updateEditorState()
     }
@@ -197,11 +193,10 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     private fun buildButtonsPanel(): JPanel {
         val panel = JPanel(BorderLayout(10, 0))
 
-        // Test and Share buttons on the left
+        // Test button on the left
         val actionPanel = JPanel(FlowLayout(FlowLayout.LEFT, 10, 0))
         testButton.toolTipText = "Test the URL against the rules"
         actionPanel.add(testButton)
-        actionPanel.add(shareButton)
         panel.add(actionPanel, BorderLayout.WEST)
 
         // Saved cases on the right
@@ -297,9 +292,6 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         // Test button
         testButton.addActionListener { runTest() }
 
-        // Share button
-        shareButton.addActionListener { runShare() }
-
         // Saved cases
         savedCasesComboBox.addActionListener { loadSelectedCase() }
         saveButton.addActionListener { saveCurrentCase() }
@@ -324,42 +316,10 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         }
     }
 
-    private fun runShare() {
-        val validation = viewModel.validate()
-        if (validation is HtaccessViewModel.ValidationResult.Invalid) {
-            Messages.showErrorDialog(
-                project,
-                validation.errors.joinToString("\n"),
-                "Validation Error"
-            )
-            return
-        }
-
-        viewModel.runShare { result, error ->
-            if (error != null) {
-                Messages.showErrorDialog(project, error, "Share Failed")
-            } else if (result != null) {
-                // Copy to clipboard
-                CopyPasteManager.getInstance().setContents(StringSelection(result.shareUrl))
-
-                // Show notification
-                NotificationGroupManager.getInstance()
-                    .getNotificationGroup("Htaccess Tester")
-                    .createNotification(
-                        "Share link copied to clipboard",
-                        result.shareUrl,
-                        NotificationType.INFORMATION
-                    )
-                    .notify(project)
-            }
-        }
-    }
-
     private fun refreshUI() {
-        // Update progress bar and buttons
+        // Update progress bar and button
         progressBar.isVisible = viewModel.isLoading
         testButton.isEnabled = !viewModel.isLoading
-        shareButton.isEnabled = !viewModel.isLoading
 
         // Update results
         val result = viewModel.lastResult
