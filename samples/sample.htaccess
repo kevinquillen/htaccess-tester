@@ -1,5 +1,3 @@
-# Sample .htaccess file for Htaccess Tester Demo
-#
 # Test URLs to try:
 #   - https://example.com/old-page        -> redirects to /new-page
 #   - https://example.com/blog/123        -> rewrites to /index.php?post=123

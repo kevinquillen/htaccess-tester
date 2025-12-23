@@ -68,7 +68,22 @@ intellijPlatform {
 
         vendor {
             name = "Kevin Quillen"
+            url = "https://github.com/kevinquillen"
         }
+
+        changeNotes = """
+            <h3>0.1.0</h3>
+            <ul>
+                <li>Initial release</li>
+                <li>Test .htaccess rewrite rules against htaccess.madewithlove.com API</li>
+                <li>Support for custom server variables</li>
+                <li>Read rules from open .htaccess files in editor</li>
+                <li>Save and load test cases per project</li>
+                <li>Filter trace results (all, failed, reached, met)</li>
+                <li>Copy summary and view raw API response</li>
+                <li>Automatic retry for transient server errors</li>
+            </ul>
+        """.trimIndent()
 
         ideaVersion {
             sinceBuild = "241"
