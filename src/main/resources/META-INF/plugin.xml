@@ -39,5 +39,14 @@
                     text="Open Tool Window"
                     description="Open the Htaccess Tester tool window"/>
         </group>
+
+        <!-- Editor context menu action for .htaccess files -->
+        <action id="HtaccessTester.TestFromEditor"
+                class="dev.kevinquillen.htaccess.ide.editor.RunHtaccessFromEditorAction"
+                text="Test with Htaccess Tester"
+                description="Test this .htaccess file with Htaccess Tester"
+                icon="AllIcons.Actions.Execute">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>

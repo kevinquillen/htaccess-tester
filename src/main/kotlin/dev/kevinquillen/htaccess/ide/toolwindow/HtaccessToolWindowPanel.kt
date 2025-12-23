@@ -3,6 +3,8 @@ package dev.kevinquillen.htaccess.ide.toolwindow
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.fileEditor.FileEditorManagerEvent
+import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
@@ -11,6 +13,7 @@ import com.intellij.ui.components.*
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import dev.kevinquillen.htaccess.domain.model.ResultLine
+import dev.kevinquillen.htaccess.ide.editor.EditorUtils
 import dev.kevinquillen.htaccess.settings.HtaccessProjectService
 import dev.kevinquillen.htaccess.settings.SavedTestCase
 import java.awt.BorderLayout
@@ -29,6 +32,8 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     // Input components
     private val urlField = JBTextField()
     private val rulesTextArea = JBTextArea(10, 40)
+    private val useEditorCheckbox = JBCheckBox("Use current .htaccess file")
+    private val editorFileLabel = JBLabel("")
     private val serverVarsTable = JBTable(viewModel.serverVariables)
     private val addVarButton = JButton("+")
     private val removeVarButton = JButton("-")
@@ -62,9 +67,11 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     init {
         buildUI()
         setupListeners()
+        setupEditorListener()
         viewModel.onStateChanged = { refreshUI() }
         shareButton.toolTipText = "Share this test case and copy link to clipboard"
         refreshSavedCases()
+        updateEditorState()
     }
 
     private fun buildUI() {
@@ -85,7 +92,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         urlField.toolTipText = "Enter the URL to test (e.g., https://example.com/page)"
         mainPanel.add(urlField, gbc)
 
-        // Rules TextArea
+        // Rules section with editor toggle
         gbc.gridx = 0
         gbc.gridy = 1
         gbc.fill = GridBagConstraints.NONE
@@ -94,6 +101,14 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         mainPanel.add(JBLabel("Rules:"), gbc)
 
         gbc.gridx = 1
+        gbc.fill = GridBagConstraints.HORIZONTAL
+        gbc.weightx = 1.0
+        gbc.weighty = 0.0
+        mainPanel.add(buildEditorTogglePanel(), gbc)
+
+        // Rules TextArea
+        gbc.gridx = 1
+        gbc.gridy = 2
         gbc.fill = GridBagConstraints.BOTH
         gbc.weightx = 1.0
         gbc.weighty = 0.4
@@ -105,7 +120,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
 
         // Server Variables Section
         gbc.gridx = 0
-        gbc.gridy = 2
+        gbc.gridy = 3
         gbc.fill = GridBagConstraints.NONE
         gbc.weightx = 0.0
         gbc.weighty = 0.0
@@ -121,7 +136,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
 
         // Buttons Panel
         gbc.gridx = 0
-        gbc.gridy = 3
+        gbc.gridy = 4
         gbc.gridwidth = 2
         gbc.fill = GridBagConstraints.HORIZONTAL
         gbc.weightx = 1.0
@@ -130,13 +145,13 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         mainPanel.add(buildButtonsPanel(), gbc)
 
         // Progress Bar
-        gbc.gridy = 4
+        gbc.gridy = 5
         progressBar.isIndeterminate = true
         progressBar.isVisible = false
         mainPanel.add(progressBar, gbc)
 
         // Output Section
-        gbc.gridy = 5
+        gbc.gridy = 6
         gbc.fill = GridBagConstraints.BOTH
         gbc.weighty = 0.4
         mainPanel.add(buildOutputPanel(), gbc)
@@ -163,6 +178,18 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
 
         panel.add(tableScrollPane, BorderLayout.CENTER)
         panel.add(buttonsPanel, BorderLayout.SOUTH)
+
+        return panel
+    }
+
+    private fun buildEditorTogglePanel(): JPanel {
+        val panel = JPanel(FlowLayout(FlowLayout.LEFT, 5, 0))
+
+        useEditorCheckbox.toolTipText = "Read rules from the currently open .htaccess file in the editor"
+        panel.add(useEditorCheckbox)
+
+        editorFileLabel.foreground = JBColor.GRAY
+        panel.add(editorFileLabel)
 
         return panel
     }
@@ -256,6 +283,14 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
             if (selected != null && selected != "-- Add preset --") {
                 viewModel.addServerVariable(selected, "")
                 presetComboBox.selectedIndex = 0
+            }
+        }
+
+        // Use editor checkbox
+        useEditorCheckbox.addActionListener {
+            updateEditorState()
+            if (useEditorCheckbox.isSelected) {
+                syncFromEditor()
             }
         }
 
@@ -453,6 +488,63 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
             service.deleteTestCase(selectedName)
             refreshSavedCases()
         }
+    }
+
+    private fun setupEditorListener() {
+        project.messageBus.connect(this).subscribe(
+            FileEditorManagerListener.FILE_EDITOR_MANAGER,
+            object : FileEditorManagerListener {
+                override fun selectionChanged(event: FileEditorManagerEvent) {
+                    updateEditorState()
+                    if (useEditorCheckbox.isSelected) {
+                        syncFromEditor()
+                    }
+                }
+            }
+        )
+    }
+
+    private fun updateEditorState() {
+        val hasHtaccess = EditorUtils.hasActiveHtaccessFile(project)
+
+        if (hasHtaccess) {
+            val content = EditorUtils.getActiveHtaccessContent(project)
+            editorFileLabel.text = content?.filePath ?: ""
+            useEditorCheckbox.isEnabled = true
+        } else {
+            editorFileLabel.text = if (useEditorCheckbox.isSelected) "(no .htaccess file open)" else ""
+            useEditorCheckbox.isEnabled = hasHtaccess || useEditorCheckbox.isSelected
+        }
+
+        // Disable text area editing when using editor
+        rulesTextArea.isEditable = !useEditorCheckbox.isSelected
+        rulesTextArea.background = if (useEditorCheckbox.isSelected) {
+            JBColor.PanelBackground
+        } else {
+            JBColor.background()
+        }
+    }
+
+    private fun syncFromEditor() {
+        val content = EditorUtils.getActiveHtaccessContent(project)
+        if (content != null) {
+            rulesTextArea.text = content.content
+            viewModel.rules = content.content
+            editorFileLabel.text = content.filePath
+        } else {
+            editorFileLabel.text = "(no .htaccess file open)"
+        }
+    }
+
+    /**
+     * Loads rules from a specific file path. Used by the editor context action.
+     */
+    fun loadFromFile(filePath: String, content: String) {
+        useEditorCheckbox.isSelected = true
+        rulesTextArea.text = content
+        viewModel.rules = content
+        editorFileLabel.text = filePath
+        updateEditorState()
     }
 
     override fun dispose() {
