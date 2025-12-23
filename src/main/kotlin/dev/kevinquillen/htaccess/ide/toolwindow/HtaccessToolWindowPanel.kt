@@ -5,6 +5,7 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
+import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.JBColor
@@ -12,6 +13,7 @@ import com.intellij.ui.components.*
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import dev.kevinquillen.htaccess.domain.model.ResultLine
+import dev.kevinquillen.htaccess.domain.model.TraceFilter
 import dev.kevinquillen.htaccess.ide.editor.EditorUtils
 import dev.kevinquillen.htaccess.settings.HtaccessProjectService
 import dev.kevinquillen.htaccess.settings.SavedTestCase
@@ -20,6 +22,7 @@ import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.datatransfer.StringSelection
 import javax.swing.*
 import javax.swing.table.DefaultTableCellRenderer
 
@@ -56,10 +59,14 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
 
     // Output components
     private val resultUrlLabel = JBLabel("")
+    private val statsLabel = JBLabel("")
+    private val traceFilterComboBox = JComboBox(TraceFilter.entries.map { it.displayName }.toTypedArray())
+    private val copySummaryButton = JButton("Copy Summary")
     private val traceListModel = DefaultListModel<ResultLine>()
     private val traceList = JBList(traceListModel)
     private val rawResponseArea = JBTextArea(5, 40)
     private val progressBar = JProgressBar()
+    private var currentFilter = TraceFilter.ALL
 
     init {
         buildUI()
@@ -215,15 +222,38 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     }
 
     private fun buildOutputPanel(): JPanel {
-        val panel = JPanel(BorderLayout(0, 10))
+        val panel = JPanel(BorderLayout(0, 5))
         panel.border = JBUI.Borders.emptyTop(10)
 
-        // Result URL
-        val resultPanel = JPanel(BorderLayout(5, 0))
-        resultPanel.add(JBLabel("Result URL:"), BorderLayout.WEST)
+        // Summary header panel
+        val headerPanel = JPanel(BorderLayout(5, 5))
+
+        // Result URL row
+        val resultRow = JPanel(BorderLayout(5, 0))
+        resultRow.add(JBLabel("Result URL:"), BorderLayout.WEST)
         resultUrlLabel.font = resultUrlLabel.font.deriveFont(java.awt.Font.BOLD)
-        resultPanel.add(resultUrlLabel, BorderLayout.CENTER)
-        panel.add(resultPanel, BorderLayout.NORTH)
+        resultRow.add(resultUrlLabel, BorderLayout.CENTER)
+        headerPanel.add(resultRow, BorderLayout.NORTH)
+
+        // Stats and controls row
+        val controlsRow = JPanel(BorderLayout(10, 0))
+
+        // Stats on the left
+        statsLabel.foreground = JBColor.GRAY
+        controlsRow.add(statsLabel, BorderLayout.WEST)
+
+        // Filter and copy button on the right
+        val filterPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 5, 0))
+        filterPanel.add(JBLabel("Filter:"))
+        traceFilterComboBox.toolTipText = "Filter trace results"
+        filterPanel.add(traceFilterComboBox)
+        copySummaryButton.toolTipText = "Copy test summary to clipboard"
+        copySummaryButton.isEnabled = false
+        filterPanel.add(copySummaryButton)
+        controlsRow.add(filterPanel, BorderLayout.EAST)
+
+        headerPanel.add(controlsRow, BorderLayout.SOUTH)
+        panel.add(headerPanel, BorderLayout.NORTH)
 
         // Trace list with custom renderer
         traceList.cellRenderer = ResultLineCellRenderer()
@@ -292,6 +322,15 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         // Test button
         testButton.addActionListener { runTest() }
 
+        // Filter combo box
+        traceFilterComboBox.addActionListener {
+            currentFilter = TraceFilter.entries[traceFilterComboBox.selectedIndex]
+            applyFilter()
+        }
+
+        // Copy summary button
+        copySummaryButton.addActionListener { copySummary() }
+
         // Saved cases
         savedCasesComboBox.addActionListener { loadSelectedCase() }
         saveButton.addActionListener { saveCurrentCase() }
@@ -328,15 +367,45 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
             val statusText = result.outputStatusCode?.let { " (HTTP $it)" } ?: ""
             resultUrlLabel.text = "$urlText$statusText"
 
-            traceListModel.clear()
-            result.lines.forEach { traceListModel.addElement(it) }
+            // Update stats
+            val stats = TraceFilter.calculateStats(result.lines)
+            statsLabel.text = "${stats.total} rules: ${stats.met} met, ${stats.notMet} not met, ${stats.invalid} invalid"
+
+            // Apply filter and populate trace list
+            applyFilter()
 
             rawResponseArea.text = result.rawResponse
+            copySummaryButton.isEnabled = true
         } else {
             resultUrlLabel.text = ""
+            statsLabel.text = ""
             traceListModel.clear()
             rawResponseArea.text = viewModel.lastError ?: ""
+            copySummaryButton.isEnabled = false
         }
+    }
+
+    private fun applyFilter() {
+        val result = viewModel.lastResult ?: return
+        val filteredLines = TraceFilter.filter(result.lines, currentFilter)
+
+        traceListModel.clear()
+        filteredLines.forEach { traceListModel.addElement(it) }
+    }
+
+    private fun copySummary() {
+        val result = viewModel.lastResult ?: return
+        val summary = TraceFilter.generateSummary(result)
+
+        CopyPasteManager.getInstance().setContents(StringSelection(summary))
+
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("Htaccess Tester")
+            .createNotification(
+                "Summary copied to clipboard",
+                NotificationType.INFORMATION
+            )
+            .notify(project)
     }
 
     private fun refreshSavedCases() {
