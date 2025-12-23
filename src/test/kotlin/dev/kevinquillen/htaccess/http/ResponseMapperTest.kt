@@ -103,6 +103,27 @@ class ResponseMapperTest {
         assertEquals(json, result.rawResponse)
     }
 
+    @Test
+    fun `handles null values in result line with safe defaults`() {
+        val dto = ResultLineDto(
+            line = null,
+            message = null,
+            isMet = null,
+            isValid = null,
+            wasReached = null,
+            isSupported = null
+        )
+
+        val result = ResponseMapper.toDomain(dto)
+
+        assertEquals("", result.line)
+        assertNull(result.message)
+        assertFalse(result.isMet)
+        assertTrue(result.isValid)
+        assertFalse(result.wasReached)
+        assertTrue(result.isSupported)
+    }
+
     private fun loadFixture(filename: String): String {
         return javaClass.classLoader
             .getResourceAsStream("fixtures/$filename")

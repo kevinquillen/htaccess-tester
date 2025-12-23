@@ -12,12 +12,13 @@ data class TestResponseDto(
 
 /**
  * DTO for individual rule evaluation result.
+ * All fields nullable to handle unexpected API responses - Gson doesn't enforce Kotlin null-safety.
  */
 data class ResultLineDto(
-    val line: String,
-    val message: String,
-    val isMet: Boolean,
-    val isValid: Boolean,
-    val wasReached: Boolean,
-    val isSupported: Boolean
+    val line: String?,
+    val message: String?,
+    val isMet: Boolean?,
+    val isValid: Boolean?,
+    val wasReached: Boolean?,
+    val isSupported: Boolean?
 )

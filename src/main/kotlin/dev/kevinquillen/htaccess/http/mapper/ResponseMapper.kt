@@ -21,12 +21,12 @@ object ResponseMapper {
 
     fun toDomain(dto: ResultLineDto): ResultLine {
         return ResultLine(
-            line = dto.line,
+            line = dto.line ?: "",
             message = dto.message,
-            isMet = dto.isMet,
-            isValid = dto.isValid,
-            wasReached = dto.wasReached,
-            isSupported = dto.isSupported
+            isMet = dto.isMet ?: false,
+            isValid = dto.isValid ?: true,
+            wasReached = dto.wasReached ?: false,
+            isSupported = dto.isSupported ?: true
         )
     }
 }
