@@ -1,0 +1,33 @@
+# Sample .htaccess file for Htaccess Tester Demo
+#
+# Test URLs to try:
+#   - https://example.com/old-page        -> redirects to /new-page
+#   - https://example.com/blog/123        -> rewrites to /index.php?post=123
+#   - http://example.com/secure           -> redirects to HTTPS
+#   - https://example.com/api/users/42    -> rewrites to /api.php?resource=users&id=42
+
+RewriteEngine On
+
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# Redirect old page to new page
+RewriteRule ^old-page/?$ /new-page [R=301,L]
+
+# Blog post URL rewrite
+# /blog/123 -> /index.php?post=123
+RewriteRule ^blog/([0-9]+)/?$ /index.php?post=$1 [L,QSA]
+
+# RESTful API rewrite
+# /api/users/42 -> /api.php?resource=users&id=42
+RewriteRule ^api/([a-z]+)/([0-9]+)/?$ /api.php?resource=$1&id=$2 [L,QSA]
+
+# Remove trailing slashes (except for directories)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)/$ /$1 [R=301,L]
+
+# Front controller pattern (common in PHP frameworks)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.php?route=$1 [L,QSA]

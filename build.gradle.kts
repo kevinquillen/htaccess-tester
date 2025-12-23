@@ -59,8 +59,8 @@ intellijPlatform {
                 <li>Test .htaccess rules against any URL</li>
                 <li>Support for custom server variables</li>
                 <li>Read rules directly from open .htaccess files</li>
-                <li>Share test cases via URL</li>
                 <li>Save and reload test cases per project</li>
+                <li>Filter and analyze rule evaluation results</li>
             </ul>
 
             <b>Note:</b> Requires internet access for remote rule evaluation.
@@ -78,7 +78,9 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            recommended()
+            ide(org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.IntellijIdeaCommunity, "2024.1")
+            ide(org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.IntellijIdeaCommunity, "2024.2")
+            ide(org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.IntellijIdeaCommunity, "2024.3")
         }
     }
 }
