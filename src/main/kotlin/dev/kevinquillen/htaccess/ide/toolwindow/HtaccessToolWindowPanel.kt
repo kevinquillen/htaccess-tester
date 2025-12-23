@@ -24,6 +24,7 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.datatransfer.StringSelection
 import javax.swing.*
+import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 
 class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayout()), Disposable {
@@ -62,8 +63,8 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     private val statsLabel = JBLabel("")
     private val traceFilterComboBox = JComboBox(TraceFilter.entries.map { it.displayName }.toTypedArray())
     private val copySummaryButton = JButton("Copy Summary")
-    private val traceListModel = DefaultListModel<ResultLine>()
-    private val traceList = JBList(traceListModel)
+    private val traceTableModel = ResultLineTableModel()
+    private val traceTable = JBTable(traceTableModel)
     private val rawResponseArea = JBTextArea(5, 40)
     private val progressBar = JProgressBar()
     private var currentFilter = TraceFilter.ALL
@@ -255,10 +256,21 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         headerPanel.add(controlsRow, BorderLayout.SOUTH)
         panel.add(headerPanel, BorderLayout.NORTH)
 
-        // Trace list with custom renderer
-        traceList.cellRenderer = ResultLineCellRenderer()
-        traceList.selectionMode = ListSelectionModel.SINGLE_SELECTION
-        val traceScrollPane = JBScrollPane(traceList)
+        // Trace table setup
+        traceTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+        traceTable.rowHeight = 24
+        traceTable.tableHeader.reorderingAllowed = false
+
+        // Status column (icon) - fixed narrow width
+        traceTable.columnModel.getColumn(0).preferredWidth = 30
+        traceTable.columnModel.getColumn(0).maxWidth = 40
+        traceTable.columnModel.getColumn(0).minWidth = 30
+        traceTable.columnModel.getColumn(0).cellRenderer = StatusIconRenderer()
+
+        // Rule column - takes remaining space
+        traceTable.columnModel.getColumn(1).cellRenderer = RuleColumnRenderer()
+
+        val traceScrollPane = JBScrollPane(traceTable)
         traceScrollPane.border = BorderFactory.createTitledBorder("Trace")
         traceScrollPane.preferredSize = Dimension(400, 120)
 
@@ -379,7 +391,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         } else {
             resultUrlLabel.text = ""
             statsLabel.text = ""
-            traceListModel.clear()
+            traceTableModel.clear()
             rawResponseArea.text = viewModel.lastError ?: ""
             copySummaryButton.isEnabled = false
         }
@@ -388,9 +400,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     private fun applyFilter() {
         val result = viewModel.lastResult ?: return
         val filteredLines = TraceFilter.filter(result.lines, currentFilter)
-
-        traceListModel.clear()
-        filteredLines.forEach { traceListModel.addElement(it) }
+        traceTableModel.setLines(filteredLines)
     }
 
     private fun copySummary() {
@@ -445,7 +455,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
 
         // Clear previous results
         viewModel.lastResult?.let {
-            traceListModel.clear()
+            traceTableModel.clear()
             resultUrlLabel.text = ""
             rawResponseArea.text = ""
         }
@@ -581,33 +591,119 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     }
 
     /**
-     * Custom cell renderer for the trace list showing rule evaluation results.
+     * Table model for displaying ResultLine data in the trace table.
      */
-    private class ResultLineCellRenderer : DefaultListCellRenderer() {
-        override fun getListCellRendererComponent(
-            list: JList<*>?,
+    private class ResultLineTableModel : AbstractTableModel() {
+        private val lines = mutableListOf<ResultLine>()
+        private val columnNames = arrayOf("", "Rule / Response")
+
+        fun setLines(newLines: List<ResultLine>) {
+            lines.clear()
+            lines.addAll(newLines)
+            fireTableDataChanged()
+        }
+
+        fun clear() {
+            lines.clear()
+            fireTableDataChanged()
+        }
+
+        fun getLineAt(row: Int): ResultLine? = lines.getOrNull(row)
+
+        override fun getRowCount(): Int = lines.size
+        override fun getColumnCount(): Int = 2
+        override fun getColumnName(column: Int): String = columnNames[column]
+
+        override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? {
+            val line = lines.getOrNull(rowIndex) ?: return null
+            return when (columnIndex) {
+                0 -> line  // Status column - pass the whole line for icon rendering
+                1 -> line  // Rule column - pass the whole line for text rendering
+                else -> null
+            }
+        }
+
+        override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = false
+    }
+
+    /**
+     * Renders the status icon column in the trace table.
+     * - Green check: met and valid
+     * - Red X: invalid
+     * - Yellow hyphen: not supported or not reached
+     * - Gray dash: not met but valid and reached
+     */
+    private class StatusIconRenderer : DefaultTableCellRenderer() {
+        init {
+            horizontalAlignment = CENTER
+        }
+
+        override fun getTableCellRendererComponent(
+            table: JTable?,
             value: Any?,
-            index: Int,
             isSelected: Boolean,
-            cellHasFocus: Boolean
+            hasFocus: Boolean,
+            row: Int,
+            column: Int
         ): java.awt.Component {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
 
             if (value is ResultLine) {
-                val statusIcon = when {
-                    !value.isValid -> "\u274C" // Red X
-                    value.isMet -> "\u2705"    // Green check
-                    else -> "\u2796"           // Neutral dash
+                text = when {
+                    !value.isValid -> "\u274C"           // Red X - invalid
+                    !value.isSupported -> "\u2796"       // Horizontal bar - not supported (caution)
+                    !value.wasReached -> "\u2796"        // Horizontal bar - not reached (caution)
+                    value.isMet -> "\u2705"              // Green check - met
+                    else -> "\u2796"                     // Horizontal bar - not met
                 }
 
-                text = "$statusIcon ${value.line}"
+                if (!isSelected) {
+                    foreground = when {
+                        !value.isValid -> JBColor.RED
+                        !value.isSupported -> JBColor(0xB8860B, 0xDAA520) // Dark/Light goldenrod (yellow)
+                        !value.wasReached -> JBColor(0xB8860B, 0xDAA520)  // Dark/Light goldenrod (yellow)
+                        value.isMet -> JBColor(0x228B22, 0x90EE90)        // Forest/Light green
+                        else -> JBColor.GRAY
+                    }
+                }
+
+                font = font.deriveFont(16f)
+            }
+
+            return this
+        }
+    }
+
+    /**
+     * Renders the rule/response column in the trace table.
+     */
+    private class RuleColumnRenderer : DefaultTableCellRenderer() {
+        override fun getTableCellRendererComponent(
+            table: JTable?,
+            value: Any?,
+            isSelected: Boolean,
+            hasFocus: Boolean,
+            row: Int,
+            column: Int
+        ): java.awt.Component {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
+
+            if (value is ResultLine) {
+                // Show the rule line, and message if available
+                text = if (value.message != null) {
+                    "${value.line} — ${value.message}"
+                } else {
+                    value.line
+                }
+
                 toolTipText = buildToolTip(value)
 
                 if (!isSelected) {
                     foreground = when {
                         !value.isValid -> JBColor.RED
+                        !value.isSupported -> JBColor(0xB8860B, 0xDAA520)
                         !value.wasReached -> JBColor.GRAY
-                        value.isMet -> JBColor(0x228B22, 0x90EE90) // Forest green / light green
+                        value.isMet -> JBColor(0x228B22, 0x90EE90)
                         else -> JBColor.foreground()
                     }
                 }
@@ -619,11 +715,12 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         private fun buildToolTip(line: ResultLine): String {
             return buildString {
                 append("<html>")
-                append("<b>Line:</b> ${line.line}<br>")
+                append("<b>Rule:</b> ${line.line}<br>")
                 line.message?.let { append("<b>Message:</b> $it<br>") }
                 append("<b>Met:</b> ${line.isMet}<br>")
                 append("<b>Valid:</b> ${line.isValid}<br>")
-                append("<b>Reached:</b> ${line.wasReached}")
+                append("<b>Reached:</b> ${line.wasReached}<br>")
+                append("<b>Supported:</b> ${line.isSupported}")
                 append("</html>")
             }
         }
