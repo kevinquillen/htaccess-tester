@@ -264,7 +264,9 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         // Update results
         val result = viewModel.lastResult
         if (result != null) {
-            resultUrlLabel.text = result.outputUrl ?: "(no output URL)"
+            val urlText = result.outputUrl ?: "(no output URL)"
+            val statusText = result.outputStatusCode?.let { " (HTTP $it)" } ?: ""
+            resultUrlLabel.text = "$urlText$statusText"
 
             traceListModel.clear()
             result.lines.forEach { traceListModel.addElement(it) }
