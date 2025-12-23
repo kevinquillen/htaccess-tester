@@ -1,0 +1,71 @@
+plugins {
+    id("java")
+    id("org.jetbrains.kotlin.jvm") version "1.9.25"
+    id("org.jetbrains.intellij.platform") version "2.2.1"
+}
+
+group = "dev.kevinquillen"
+version = "0.1.0"
+
+kotlin {
+    jvmToolchain(17)
+}
+
+dependencies {
+    intellijPlatform {
+        intellijIdeaCommunity("2024.1")
+
+        bundledPlugin("com.intellij.java")
+
+        pluginVerifier()
+        zipSigner()
+        instrumentationTools()
+
+        testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
+    }
+
+    testImplementation("junit:junit:4.13.2")
+}
+
+intellijPlatform {
+    pluginConfiguration {
+        id = "dev.kevinquillen.htaccess-tester"
+        name = "Htaccess Tester"
+        version = project.version.toString()
+        description = """
+            Test .htaccess rewrite rules against a remote evaluation service.
+
+            Features:
+            <ul>
+                <li>Test .htaccess rules against any URL</li>
+                <li>Support for custom server variables</li>
+                <li>Read rules directly from open .htaccess files</li>
+                <li>Share test cases via URL</li>
+                <li>Save and reload test cases per project</li>
+            </ul>
+
+            <b>Note:</b> Requires internet access for remote rule evaluation.
+        """.trimIndent()
+
+        vendor {
+            name = "Kevin Quillen"
+        }
+
+        ideaVersion {
+            sinceBuild = "241"
+            untilBuild = provider { null }
+        }
+    }
+
+    pluginVerification {
+        ides {
+            recommended()
+        }
+    }
+}
+
+tasks {
+    buildSearchableOptions {
+        enabled = false
+    }
+}

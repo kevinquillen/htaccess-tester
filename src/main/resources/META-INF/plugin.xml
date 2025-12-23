@@ -1,0 +1,40 @@
+<idea-plugin>
+    <id>dev.kevinquillen.htaccess-tester</id>
+    <name>Htaccess Tester</name>
+    <vendor>Kevin Quillen</vendor>
+
+    <description><![CDATA[
+    Test .htaccess rewrite rules against a remote evaluation service.
+
+    <h3>Features</h3>
+    <ul>
+        <li>Test .htaccess rules against any URL</li>
+        <li>Support for custom server variables</li>
+        <li>Read rules directly from open .htaccess files</li>
+        <li>Share test cases via URL</li>
+        <li>Save and reload test cases per project</li>
+    </ul>
+
+    <p><strong>Note:</strong> Requires internet access for remote rule evaluation.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Htaccess Tester"
+                    anchor="bottom"
+                    secondary="true"
+                    factoryClass="dev.kevinquillen.htaccess.ide.toolwindow.HtaccessToolWindowFactory"
+                    icon="AllIcons.General.Web"/>
+    </extensions>
+
+    <actions>
+        <group id="HtaccessTester.ToolsMenu" text="Htaccess Tester" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <action id="HtaccessTester.OpenToolWindow"
+                    class="dev.kevinquillen.htaccess.ide.actions.OpenHtaccessTesterAction"
+                    text="Open Tool Window"
+                    description="Open the Htaccess Tester tool window"/>
+        </group>
+    </actions>
+</idea-plugin>
