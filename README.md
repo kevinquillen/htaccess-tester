@@ -2,6 +2,8 @@
 
 A JetBrains IDE plugin that tests `.htaccess` rewrite rules against a remote evaluation service.
 
+![.htaccess tester screenshot in action](screenshot.png)
+
 ## Scope
 
 This plugin provides an integrated way to test Apache `.htaccess` rewrite rules directly from your IDE. It sends your rules and a test URL to the [htaccess.madewithlove.com](https://htaccess.madewithlove.com) API and displays the results, including:
@@ -39,7 +41,7 @@ This plugin provides an integrated way to test Apache `.htaccess` rewrite rules 
 - **Trace Table**: Shows each rule with its status:
   - ✅ Green check: Rule was met/matched
   - ❌ Red X: Rule is invalid (syntax error)
-  - ➖ Yellow dash: Rule was not reached or not supported
+  - ➖ Dash: Rule was not reached or not supported
 - **Filter**: Use the dropdown to show only failed, met, or reached rules
 - **Copy Summary**: Copies a text summary to your clipboard
 
@@ -53,14 +55,6 @@ This plugin provides an integrated way to test Apache `.htaccess` rewrite rules 
 ### Editor Integration
 
 Right-click any `.htaccess` file in the editor and select **Test with Htaccess Tester** to automatically load its contents.
-
-## Non-Goals
-
-- **Local evaluation**: This plugin does not interpret `.htaccess` rules locally. All evaluation happens via a remote service.
-- **Full Apache emulation**: The remote evaluator covers common rewrite scenarios but may not support every Apache module or directive.
-- **Offline usage**: An internet connection is required.
-
-## Requirements
 
 - **Internet access**: This plugin requires connectivity to the remote evaluator at `htaccess.madewithlove.com`
 - **JetBrains IDE**: Compatible with IntelliJ IDEA 2024.1+, PhpStorm, WebStorm, and other JetBrains IDEs
