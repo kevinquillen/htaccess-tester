@@ -26,7 +26,7 @@
                     anchor="bottom"
                     secondary="true"
                     factoryClass="com.github.kevinquillen.htaccess.ide.toolwindow.HtaccessToolWindowFactory"
-                    icon="AllIcons.General.Web"/>
+                    icon="AllIcons.Nodes.Servlet"/>
 
         <notificationGroup id="Htaccess Tester"
                            displayType="BALLOON"/>
@@ -46,7 +46,7 @@
                 class="com.github.kevinquillen.htaccess.ide.editor.RunHtaccessFromEditorAction"
                 text="Test with Htaccess Tester"
                 description="Test this .htaccess file with Htaccess Tester"
-                icon="AllIcons.Actions.Execute">
+                icon="AllIcons.Nodes.Test">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
     </actions>
