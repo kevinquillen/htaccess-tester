@@ -53,6 +53,8 @@ jobs:
       # Setup Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
+        env:
+          GRADLE_DOWNLOAD_RETRY: 3
         with:
           gradle-version: 8.11
 
@@ -106,6 +108,8 @@ jobs:
       # Setup Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
+        env:
+          GRADLE_DOWNLOAD_RETRY: 3
         with:
           gradle-version: 8.11
           cache-read-only: true
@@ -159,7 +163,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: zulu
-          java-version: 17
+          java-version: 21
 
       # Run Qodana inspections
       - name: Qodana - Code Inspection
@@ -195,6 +199,8 @@ jobs:
       # Setup Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
+        env:
+          GRADLE_DOWNLOAD_RETRY: 3
         with:
           gradle-version: 8.11
           cache-read-only: true
