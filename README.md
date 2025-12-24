@@ -38,9 +38,7 @@ This plugin provides an integrated way to test Apache `.htaccess` rewrite rules 
 ### Understanding Results
 
 - **Result URL**: Shows the final URL after all rewrites are applied
-- **Trace Table**: Shows each rule with its status:
-  - ✅ Green check: Rule was met/matched
-  - ❌ Red X: Rule is not matched or invalid (syntax error)
+- **Trace Table**: Shows each rule with its status
 - **Filter**: Use the dropdown to show only failed, met, or reached rules
 - **Copy Summary**: Copies a text summary to your clipboard
 

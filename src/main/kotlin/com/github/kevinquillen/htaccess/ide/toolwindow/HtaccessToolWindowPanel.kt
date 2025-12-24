@@ -9,6 +9,7 @@ import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
+import com.intellij.icons.AllIcons
 import com.intellij.ui.JBColor
 import com.github.kevinquillen.htaccess.http.HtaccessApiException
 import com.github.kevinquillen.htaccess.settings.HtaccessSettingsService
@@ -62,7 +63,6 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     private val deleteButton = JButton("Delete")
 
     // Output components
-    private val resultUrlLabel = JBLabel("")
     private val statsLabel = JBLabel("")
     private val traceFilterComboBox = JComboBox(TraceFilter.entries.map { it.displayName }.toTypedArray())
     private val copySummaryButton = JButton("Copy Summary")
@@ -205,11 +205,20 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
     private fun buildButtonsPanel(): JPanel {
         val panel = JPanel(BorderLayout(10, 0))
 
-        // Test button on the left
-        val actionPanel = JPanel(FlowLayout(FlowLayout.LEFT, 10, 0))
+        // Test button and filter controls on the left
+        val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 10, 0))
         testButton.toolTipText = "Test the URL against the rules"
-        actionPanel.add(testButton)
-        panel.add(actionPanel, BorderLayout.WEST)
+        leftPanel.add(testButton)
+        leftPanel.add(JBLabel("Filter:"))
+        traceFilterComboBox.toolTipText = "Filter trace results"
+        leftPanel.add(traceFilterComboBox)
+        copySummaryButton.toolTipText = "Copy test summary to clipboard"
+        copySummaryButton.isEnabled = false
+        leftPanel.add(copySummaryButton)
+        viewRawOutputButton.toolTipText = "View the raw JSON response from the API"
+        viewRawOutputButton.isEnabled = false
+        leftPanel.add(viewRawOutputButton)
+        panel.add(leftPanel, BorderLayout.WEST)
 
         // Saved cases on the right
         val savedCasesPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 5, 0))
@@ -230,38 +239,9 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         val panel = JPanel(BorderLayout(0, 5))
         panel.border = JBUI.Borders.emptyTop(10)
 
-        // Summary header panel
-        val headerPanel = JPanel(BorderLayout(5, 5))
-
-        // Result URL row
-        val resultRow = JPanel(BorderLayout(5, 0))
-        resultRow.add(JBLabel("Result URL:"), BorderLayout.WEST)
-        resultUrlLabel.font = resultUrlLabel.font.deriveFont(java.awt.Font.BOLD)
-        resultRow.add(resultUrlLabel, BorderLayout.CENTER)
-        headerPanel.add(resultRow, BorderLayout.NORTH)
-
-        // Stats and controls row
-        val controlsRow = JPanel(BorderLayout(10, 0))
-
-        // Stats on the left
+        // Stats row
         statsLabel.foreground = JBColor.GRAY
-        controlsRow.add(statsLabel, BorderLayout.WEST)
-
-        // Filter and buttons on the right
-        val filterPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 5, 0))
-        filterPanel.add(JBLabel("Filter:"))
-        traceFilterComboBox.toolTipText = "Filter trace results"
-        filterPanel.add(traceFilterComboBox)
-        copySummaryButton.toolTipText = "Copy test summary to clipboard"
-        copySummaryButton.isEnabled = false
-        filterPanel.add(copySummaryButton)
-        viewRawOutputButton.toolTipText = "View the raw JSON response from the API"
-        viewRawOutputButton.isEnabled = false
-        filterPanel.add(viewRawOutputButton)
-        controlsRow.add(filterPanel, BorderLayout.EAST)
-
-        headerPanel.add(controlsRow, BorderLayout.SOUTH)
-        panel.add(headerPanel, BorderLayout.NORTH)
+        panel.add(statsLabel, BorderLayout.NORTH)
 
         // Trace table setup
         traceTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
@@ -419,10 +399,6 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         // Update results
         val result = viewModel.lastResult
         if (result != null) {
-            val urlText = result.outputUrl ?: "(no output URL)"
-            val statusText = result.outputStatusCode?.let { " (HTTP $it)" } ?: ""
-            resultUrlLabel.text = "$urlText$statusText"
-
             // Update stats
             val stats = TraceFilter.calculateStats(result.lines)
             statsLabel.text = "${stats.total} rules: ${stats.met} met, ${stats.notMet} not met, ${stats.invalid} invalid"
@@ -434,7 +410,6 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
             copySummaryButton.isEnabled = true
             viewRawOutputButton.isEnabled = true
         } else {
-            resultUrlLabel.text = ""
             statsLabel.text = ""
             traceTableModel.clear()
             lastRawResponse = viewModel.lastError ?: ""
@@ -507,7 +482,6 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         // Clear previous results
         viewModel.lastResult?.let {
             traceTableModel.clear()
-            resultUrlLabel.text = ""
             lastRawResponse = ""
             viewRawOutputButton.isEnabled = false
         }
@@ -682,8 +656,8 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
      * Renders the status icon column in the trace table.
      * - Green check: met and valid
      * - Red X: invalid
-     * - Yellow hyphen: not supported or not reached
-     * - Gray dash: not met but valid and reached
+     * - Yellow warning: not supported or not reached
+     * - Red X: not met but valid and reached
      */
     private class StatusIconRenderer : DefaultTableCellRenderer() {
         init {
@@ -701,25 +675,14 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
 
             if (value is ResultLine) {
-                text = when {
-                    !value.isValid -> "\u274C"           // Red X - invalid
-                    !value.isSupported -> "\u2796"       // Horizontal bar - not supported (caution)
-                    !value.wasReached -> "\u2796"        // Horizontal bar - not reached (caution)
-                    value.isMet -> "\u2705"              // Green check - met
-                    else -> "\u274C"                     // Red X - not met
+                text = null
+                icon = when {
+                    !value.isValid -> AllIcons.General.Error
+                    !value.isSupported -> AllIcons.General.Warning
+                    !value.wasReached -> AllIcons.General.Warning
+                    value.isMet -> AllIcons.General.InspectionsOK
+                    else -> AllIcons.General.Error
                 }
-
-                if (!isSelected) {
-                    foreground = when {
-                        !value.isValid -> JBColor.RED
-                        !value.isSupported -> JBColor(0xB8860B, 0xDAA520) // Dark/Light goldenrod (yellow)
-                        !value.wasReached -> JBColor(0xB8860B, 0xDAA520)  // Dark/Light goldenrod (yellow)
-                        value.isMet -> JBColor(0x228B22, 0x90EE90)        // Forest/Light green
-                        else -> JBColor.RED                               // Red - not met
-                    }
-                }
-
-                font = font.deriveFont(16f)
             }
 
             return this
