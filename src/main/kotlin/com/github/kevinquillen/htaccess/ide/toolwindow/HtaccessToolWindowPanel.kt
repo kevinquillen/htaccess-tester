@@ -779,6 +779,9 @@ private class FirstRunNoticeDialog(project: Project) : DialogWrapper(project, tr
             appendLine("  - Do not include sensitive information in your rules or URLs")
             appendLine("  - The service may log requests for debugging purposes")
             appendLine("  - Requires an active internet connection")
+            appendLine("-----")
+            appendLine("Author: Kevin Quillen")
+            appendLine("Repository: https://github.com/kevinquillen/htaccess-tester")
         }
 
         panel.add(JBScrollPane(messageArea), BorderLayout.CENTER)
