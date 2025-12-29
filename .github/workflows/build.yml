@@ -86,7 +86,9 @@ jobs:
           gradle-version: 8.11
           cache-read-only: true
       - name: Run Tests
-        run: ./gradlew check
+        run: |
+          ./gradlew check
+          ./gradlew test
       - name: Collect Tests Result
         if: ${{ failure() }}
         uses: actions/upload-artifact@v5
