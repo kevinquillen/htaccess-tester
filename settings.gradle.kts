@@ -7,3 +7,4 @@ pluginManagement {
 rootProject.name = "htaccess-tester"
 
 include("htaccess-engine")
+include("conformance")
