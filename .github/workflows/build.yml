@@ -86,15 +86,16 @@ jobs:
           gradle-version: 8.11
           cache-read-only: true
       - name: Run Tests
-        run: |
-          ./gradlew check
-          ./gradlew test
+        run: ./gradlew check test
       - name: Collect Tests Result
         if: ${{ failure() }}
         uses: actions/upload-artifact@v5
         with:
           name: tests-result
-          path: ${{ github.workspace }}/build/reports/tests
+          path: |
+            ${{ github.workspace }}/build/reports/tests
+            ${{ github.workspace }}/htaccess-engine/build/reports/tests
+            ${{ github.workspace }}/conformance/build/reports/tests
   verify:
     name: Verify plugin
     needs: [ build ]
