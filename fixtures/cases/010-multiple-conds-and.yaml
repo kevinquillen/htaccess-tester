@@ -1,0 +1,12 @@
+id: multiple-conds-and
+url: "http://example.com/admin"
+rules: |
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^example\.com$
+  RewriteCond %{REQUEST_URI} ^/admin
+  RewriteRule ^(.*)$ /login [R=302,L]
+serverVariables:
+  HTTP_HOST: "example.com"
+expected:
+  outputUrl: "http://example.com/login"
+  statusCode: 302

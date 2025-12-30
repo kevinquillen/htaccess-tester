@@ -1,0 +1,13 @@
+id: qsa-append
+url: "http://example.com/search?q=test"
+rules: |
+  RewriteEngine On
+  RewriteRule ^search$ /results?page=1 [QSA,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/results?page=1&q=test"
+  lines:
+    - contains: "RewriteRule ^search$"
+      reached: true
+      met: true

@@ -1,0 +1,10 @@
+id: cond-nc-flag
+url: "http://example.com/page"
+rules: |
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^EXAMPLE\.COM$ [NC]
+  RewriteRule ^(.*)$ /matched [L]
+serverVariables:
+  HTTP_HOST: "example.com"
+expected:
+  outputUrl: "http://example.com/matched"

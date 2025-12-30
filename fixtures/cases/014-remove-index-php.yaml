@@ -1,0 +1,10 @@
+id: remove-index-php
+url: "http://example.com/index.php"
+rules: |
+  RewriteEngine On
+  RewriteRule ^index\.php$ / [R=301,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/"
+  statusCode: 301

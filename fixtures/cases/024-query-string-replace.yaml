@@ -1,0 +1,9 @@
+id: query-string-replace
+url: "http://example.com/search?q=hello"
+rules: |
+  RewriteEngine On
+  RewriteRule ^search$ /find?source=redirect [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/find?source=redirect"

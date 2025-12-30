@@ -1,0 +1,15 @@
+id: engine-off
+url: "http://example.com/foo"
+rules: |
+  RewriteEngine Off
+  RewriteRule ^foo$ /bar [R=301,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/foo"
+  lines:
+    - contains: "RewriteEngine Off"
+      reached: true
+      met: false
+    - contains: "RewriteRule ^foo$"
+      reached: false

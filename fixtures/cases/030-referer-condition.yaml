@@ -1,0 +1,10 @@
+id: referer-condition
+url: "http://example.com/resource"
+rules: |
+  RewriteEngine On
+  RewriteCond %{HTTP_REFERER} ^http://other\.com
+  RewriteRule ^(.*)$ /referred [L]
+serverVariables:
+  HTTP_REFERER: "http://other.com/link"
+expected:
+  outputUrl: "http://example.com/referred"

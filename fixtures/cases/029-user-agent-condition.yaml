@@ -1,0 +1,10 @@
+id: user-agent-condition
+url: "http://example.com/page"
+rules: |
+  RewriteEngine On
+  RewriteCond %{HTTP_USER_AGENT} Googlebot
+  RewriteRule ^(.*)$ /bot-page [L]
+serverVariables:
+  HTTP_USER_AGENT: "Googlebot/2.1"
+expected:
+  outputUrl: "http://example.com/bot-page"

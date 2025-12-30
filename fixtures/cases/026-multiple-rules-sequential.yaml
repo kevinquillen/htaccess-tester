@@ -1,0 +1,11 @@
+id: multiple-rules-sequential
+url: "http://example.com/a"
+rules: |
+  RewriteEngine On
+  RewriteRule ^a$ /b
+  RewriteRule ^b$ /c
+  RewriteRule ^c$ /d [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/d"

@@ -1,0 +1,10 @@
+id: l-flag-stops
+url: "http://example.com/first"
+rules: |
+  RewriteEngine On
+  RewriteRule ^first$ /second [L]
+  RewriteRule ^second$ /third [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/second"

@@ -1,0 +1,10 @@
+id: external-redirect
+url: "http://example.com/external"
+rules: |
+  RewriteEngine On
+  RewriteRule ^external$ https://other-site.com/page [R=301,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "https://other-site.com/page"
+  statusCode: 301

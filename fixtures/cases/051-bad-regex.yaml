@@ -1,0 +1,14 @@
+id: bad-regex
+url: "http://example.com/test"
+rules: |
+  RewriteEngine On
+  RewriteRule ^[invalid( /result [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/test"
+  lines:
+    - contains: "RewriteRule ^[invalid("
+      reached: true
+      met: false
+      valid: false

@@ -1,0 +1,12 @@
+id: https-redirect
+url: "http://example.com/secure/page"
+rules: |
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+serverVariables:
+  HTTPS: "off"
+  HTTP_HOST: "example.com"
+expected:
+  outputUrl: "https://example.com/secure/page"
+  statusCode: 301

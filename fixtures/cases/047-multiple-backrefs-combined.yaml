@@ -1,0 +1,9 @@
+id: multiple-backrefs-combined
+url: "http://example.com/user/john/posts/123"
+rules: |
+  RewriteEngine On
+  RewriteRule ^user/([^/]+)/posts/([0-9]+)$ /api/users/$1/posts/$2 [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/api/users/john/posts/123"

@@ -1,0 +1,10 @@
+id: flag-g-gone
+url: "http://example.com/removed"
+rules: |
+  RewriteEngine On
+  RewriteRule ^removed$ - [G]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/removed"
+  statusCode: 410

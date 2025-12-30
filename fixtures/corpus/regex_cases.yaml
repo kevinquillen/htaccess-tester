@@ -1,0 +1,182 @@
+cases:
+  - id: simple-anchor-start
+    pattern: "^foo"
+    input: "foobar"
+    matches: true
+    groups: ["foo"]
+
+  - id: simple-anchor-end
+    pattern: "bar$"
+    input: "foobar"
+    matches: true
+    groups: ["bar"]
+
+  - id: full-anchor
+    pattern: "^foobar$"
+    input: "foobar"
+    matches: true
+    groups: ["foobar"]
+
+  - id: full-anchor-no-match
+    pattern: "^foo$"
+    input: "foobar"
+    matches: false
+
+  - id: capture-group
+    pattern: "^(.*)$"
+    input: "anything"
+    matches: true
+    groups: ["anything", "anything"]
+
+  - id: multiple-groups
+    pattern: "^([a-z]+)/([0-9]+)$"
+    input: "users/123"
+    matches: true
+    groups: ["users/123", "users", "123"]
+
+  - id: optional-group
+    pattern: "^page(/(.*))?$"
+    input: "page/extra"
+    matches: true
+    groups: ["page/extra", "/extra", "extra"]
+
+  - id: optional-group-empty
+    pattern: "^page(/(.*))?$"
+    input: "page"
+    matches: true
+
+  - id: character-class
+    pattern: "^[a-zA-Z]+$"
+    input: "HelloWorld"
+    matches: true
+
+  - id: character-class-no-match
+    pattern: "^[a-zA-Z]+$"
+    input: "Hello123"
+    matches: false
+
+  - id: negated-character-class
+    pattern: "^[^/]+$"
+    input: "filename.txt"
+    matches: true
+
+  - id: negated-character-class-no-match
+    pattern: "^[^/]+$"
+    input: "path/file"
+    matches: false
+
+  - id: quantifier-plus
+    pattern: "^a+$"
+    input: "aaa"
+    matches: true
+
+  - id: quantifier-star
+    pattern: "^a*b$"
+    input: "b"
+    matches: true
+
+  - id: quantifier-question
+    pattern: "^colou?r$"
+    input: "color"
+    matches: true
+
+  - id: quantifier-braces
+    pattern: "^a{2,4}$"
+    input: "aaa"
+    matches: true
+
+  - id: alternation
+    pattern: "^(foo|bar)$"
+    input: "bar"
+    matches: true
+    groups: ["bar", "bar"]
+
+  - id: dot-any
+    pattern: "^.+$"
+    input: "anything"
+    matches: true
+
+  - id: escaped-dot
+    pattern: "^file\\.txt$"
+    input: "file.txt"
+    matches: true
+
+  - id: escaped-dot-no-match
+    pattern: "^file\\.txt$"
+    input: "fileatxt"
+    matches: false
+
+  - id: non-capturing-group
+    pattern: "^(?:foo|bar)/(.+)$"
+    input: "foo/baz"
+    matches: true
+    groups: ["foo/baz", "baz"]
+
+  - id: word-boundary
+    pattern: "\\bword\\b"
+    input: "a word here"
+    matches: true
+
+  - id: digit-shorthand
+    pattern: "^\\d+$"
+    input: "12345"
+    matches: true
+
+  - id: non-digit-shorthand
+    pattern: "^\\D+$"
+    input: "letters"
+    matches: true
+
+  - id: whitespace-shorthand
+    pattern: "^\\s+$"
+    input: "   "
+    matches: true
+
+  - id: word-char-shorthand
+    pattern: "^\\w+$"
+    input: "word_123"
+    matches: true
+
+  - id: path-with-extension
+    pattern: "^(.+)\\.html$"
+    input: "page.html"
+    matches: true
+    groups: ["page.html", "page"]
+
+  - id: url-path-segments
+    pattern: "^api/v([0-9]+)/([a-z]+)/([0-9]+)$"
+    input: "api/v2/users/123"
+    matches: true
+    groups: ["api/v2/users/123", "2", "users", "123"]
+
+  - id: http-host-pattern
+    pattern: "^www\\.example\\.com$"
+    input: "www.example.com"
+    matches: true
+
+  - id: subdomain-capture
+    pattern: "^([^.]+)\\.example\\.com$"
+    input: "blog.example.com"
+    matches: true
+    groups: ["blog.example.com", "blog"]
+
+  - id: query-string-param
+    pattern: "debug=([^&]+)"
+    input: "foo=bar&debug=true&baz=qux"
+    matches: true
+    groups: ["debug=true", "true"]
+
+  - id: trailing-slash-optional
+    pattern: "^page/?$"
+    input: "page/"
+    matches: true
+
+  - id: case-sensitive-default
+    pattern: "^[A-Z]+$"
+    input: "ABC"
+    matches: true
+
+  - id: case-sensitive-no-match
+    pattern: "^[A-Z]+$"
+    input: "abc"
+    matches: false

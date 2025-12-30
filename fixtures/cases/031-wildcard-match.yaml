@@ -1,0 +1,9 @@
+id: wildcard-match
+url: "http://example.com/anything/here/works"
+rules: |
+  RewriteEngine On
+  RewriteRule ^.*$ /catchall [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/catchall"

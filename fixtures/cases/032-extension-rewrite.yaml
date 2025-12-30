@@ -1,0 +1,9 @@
+id: extension-rewrite
+url: "http://example.com/page.html"
+rules: |
+  RewriteEngine On
+  RewriteRule ^(.+)\.html$ $1.php [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/page.php"

@@ -1,1 +1,10 @@
+pluginManagement {
+    plugins {
+        id("org.jetbrains.kotlin.jvm") version "1.9.25"
+    }
+}
+
 rootProject.name = "htaccess-tester"
+
+include("htaccess-engine")
+include("conformance")

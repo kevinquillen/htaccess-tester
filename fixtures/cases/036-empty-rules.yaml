@@ -1,0 +1,9 @@
+id: empty-rules
+url: "http://example.com/test"
+rules: |
+  RewriteEngine On
+
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/test"

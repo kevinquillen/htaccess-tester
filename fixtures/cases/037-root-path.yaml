@@ -1,0 +1,9 @@
+id: root-path
+url: "http://example.com/"
+rules: |
+  RewriteEngine On
+  RewriteRule ^$ /home [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/home"

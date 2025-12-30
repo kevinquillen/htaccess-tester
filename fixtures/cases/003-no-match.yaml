@@ -1,0 +1,17 @@
+id: no-match
+url: "http://example.com/other"
+rules: |
+  RewriteEngine On
+  RewriteRule ^foo$ /bar [R=301,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/other"
+  lines:
+    - contains: "RewriteEngine On"
+      reached: true
+      met: true
+    - contains: "RewriteRule ^foo$"
+      reached: true
+      met: false
+      valid: true

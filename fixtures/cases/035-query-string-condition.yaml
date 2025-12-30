@@ -1,0 +1,10 @@
+id: query-string-condition
+url: "http://example.com/page?debug=true"
+rules: |
+  RewriteEngine On
+  RewriteCond %{QUERY_STRING} debug=true
+  RewriteRule ^(.*)$ /debug/$1 [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/debug/page?debug=true"

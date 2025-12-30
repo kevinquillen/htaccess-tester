@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.kevinquillen"
-version = "1.0.1"
+version = "1.1.0"
 
 kotlin {
     jvmToolchain(17)
@@ -35,15 +35,14 @@ dependencies {
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
     }
 
-    // HTTP client
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // Offline htaccess engine
+    implementation(project(":htaccess-engine"))
 
-    // JSON serialization
+    // JSON serialization (for raw output formatting)
     implementation("com.google.code.gson:gson:2.10.1")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 intellijPlatform {
@@ -52,18 +51,17 @@ intellijPlatform {
         name = "Htaccess Tester"
         version = project.version.toString()
         description = """
-            Test .htaccess rewrite rules against a remote evaluation service.
+            Test .htaccess rewrite rules with instant offline evaluation.
 
             Features:
             <ul>
                 <li>Test .htaccess rules against any URL</li>
+                <li>Offline evaluation - no internet required</li>
                 <li>Support for custom server variables</li>
                 <li>Read rules directly from open .htaccess files</li>
                 <li>Save and reload test cases per project</li>
                 <li>Filter and analyze rule evaluation results</li>
             </ul>
-
-            <b>Note:</b> Requires internet access for remote rule evaluation.
         """.trimIndent()
 
         vendor {
@@ -72,16 +70,19 @@ intellijPlatform {
         }
 
         changeNotes = """
+            <h3>1.1.0</h3>
+            <ul>
+                <li>Offline evaluation - no internet connection required</li>
+                <li>Improved trace table with separate Rule and Response columns</li>
+            </ul>
             <h3>1.0.0</h3>
             <ul>
                 <li>Initial release</li>
-                <li>Test .htaccess rewrite rules against htaccess.madewithlove.com API</li>
                 <li>Support for custom server variables</li>
                 <li>Read rules from open .htaccess files in editor</li>
                 <li>Save and load test cases per project</li>
                 <li>Filter trace results (all, failed, reached, met)</li>
-                <li>Copy summary and view raw API response</li>
-                <li>Automatic retry for transient server errors</li>
+                <li>Copy summary and view raw output</li>
             </ul>
         """.trimIndent()
 

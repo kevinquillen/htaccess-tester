@@ -1,0 +1,17 @@
+id: internal-rewrite
+url: "http://example.com/old-page"
+rules: |
+  RewriteEngine On
+  RewriteRule ^old-page$ /new-page [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/new-page"
+  lines:
+    - contains: "RewriteEngine On"
+      reached: true
+      met: true
+    - contains: "RewriteRule ^old-page$"
+      reached: true
+      met: true
+      valid: true

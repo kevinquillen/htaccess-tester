@@ -1,0 +1,10 @@
+id: cond-backref
+url: "http://sub.example.com/page"
+rules: |
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^(.+)\.example\.com$
+  RewriteRule ^(.*)$ /sites/%1/$1 [L]
+serverVariables:
+  HTTP_HOST: "sub.example.com"
+expected:
+  outputUrl: "http://sub.example.com/sites/sub/page"
