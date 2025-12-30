@@ -73,8 +73,6 @@ intellijPlatform {
             <h3>1.1.0</h3>
             <ul>
                 <li>Offline evaluation - no internet connection required</li>
-                <li>Instant results with local htaccess engine</li>
-                <li>RewriteEngine On assumed by default</li>
                 <li>Improved trace table with separate Rule and Response columns</li>
             </ul>
             <h3>1.0.0</h3>
