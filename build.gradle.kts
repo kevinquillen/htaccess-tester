@@ -38,15 +38,11 @@ dependencies {
     // Offline htaccess engine
     implementation(project(":htaccess-engine"))
 
-    // HTTP client (kept for potential fallback/comparison)
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
-    // JSON serialization
+    // JSON serialization (for raw output formatting)
     implementation("com.google.code.gson:gson:2.10.1")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 intellijPlatform {

@@ -11,8 +11,6 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.icons.AllIcons
 import com.intellij.ui.JBColor
-import com.github.kevinquillen.htaccess.http.HtaccessApiException
-import com.github.kevinquillen.htaccess.settings.HtaccessSettingsService
 import com.intellij.ui.components.*
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
@@ -215,7 +213,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         copySummaryButton.toolTipText = "Copy test summary to clipboard"
         copySummaryButton.isEnabled = false
         leftPanel.add(copySummaryButton)
-        viewRawOutputButton.toolTipText = "View the raw JSON response from the API"
+        viewRawOutputButton.toolTipText = "View the raw evaluation output"
         viewRawOutputButton.isEnabled = false
         leftPanel.add(viewRawOutputButton)
         panel.add(leftPanel, BorderLayout.WEST)
@@ -338,11 +336,6 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
             return
         }
 
-        // Show first-run notice if not yet acknowledged
-        if (!checkFirstRunAcknowledged()) {
-            return
-        }
-
         viewModel.runTest { _, error ->
             if (error != null) {
                 showErrorNotification(error)
@@ -350,44 +343,10 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
         }
     }
 
-    private fun checkFirstRunAcknowledged(): Boolean {
-        val settings = HtaccessSettingsService.getInstance()
-        if (settings.firstRunAcknowledged) {
-            return true
-        }
-
-        val result = FirstRunNoticeDialog(project).showAndGet()
-        if (result) {
-            settings.firstRunAcknowledged = true
-        }
-        return result
-    }
-
     private fun showErrorNotification(error: String) {
-        // Try to get more context from the last exception if available
-        val exception = viewModel.lastException
-
-        val (title, message) = when {
-            exception is HtaccessApiException && exception.isRateLimited -> {
-                "Rate Limit Exceeded" to "The htaccess testing service has rate limited your request. Please wait a moment before testing again."
-            }
-            exception is HtaccessApiException && exception.isSchemaError -> {
-                "API Response Changed" to "The API response format has changed unexpectedly. Please check for plugin updates or try again later."
-            }
-            exception is HtaccessApiException && exception.statusCode in 500..599 -> {
-                "Service Unavailable" to "The htaccess testing service is temporarily unavailable. Please try again in a few moments."
-            }
-            exception is HtaccessApiException && exception.message?.contains("timed out", ignoreCase = true) == true -> {
-                "Request Timeout" to "The request took too long to complete. Check your network connection or try again."
-            }
-            else -> {
-                "Test Failed" to error
-            }
-        }
-
         NotificationGroupManager.getInstance()
             .getNotificationGroup("Htaccess Tester")
-            .createNotification(title, message, NotificationType.ERROR)
+            .createNotification("Test Failed", error, NotificationType.ERROR)
             .notify(project)
     }
 
@@ -743,55 +702,7 @@ class HtaccessToolWindowPanel(private val project: Project) : JPanel(BorderLayou
 }
 
 /**
- * Dialog shown on first run to explain remote evaluation.
- */
-private class FirstRunNoticeDialog(project: Project) : DialogWrapper(project, true) {
-
-    init {
-        title = "Htaccess Tester - Remote Evaluation Notice"
-        setOKButtonText("I Understand, Continue")
-        setCancelButtonText("Cancel")
-        init()
-    }
-
-    override fun createCenterPanel(): JComponent {
-        val panel = JPanel(BorderLayout(0, 10))
-        panel.preferredSize = Dimension(500, 280)
-        panel.border = JBUI.Borders.empty(10)
-
-        val messageArea = JBTextArea()
-        messageArea.isEditable = false
-        messageArea.lineWrap = true
-        messageArea.wrapStyleWord = true
-        messageArea.background = panel.background
-        messageArea.text = buildString {
-            appendLine("This plugin uses a remote service to evaluate .htaccess rules.")
-            appendLine()
-            appendLine("When you click 'Test', the following data is sent to htaccess.madewithlove.com:")
-            appendLine()
-            appendLine("  - The URL you want to test")
-            appendLine("  - Your .htaccess rules")
-            appendLine("  - Any server variables you've configured")
-            appendLine()
-            appendLine("This service is provided by madewithlove and is used by many developers to test Apache rewrite rules.")
-            appendLine()
-            appendLine("Important notes:")
-            appendLine("  - Do not include sensitive information in your rules or URLs")
-            appendLine("  - The service may log requests for debugging purposes")
-            appendLine("  - Requires an active internet connection")
-            appendLine("-----")
-            appendLine("Author: Kevin Quillen")
-            appendLine("Repository: https://github.com/kevinquillen/htaccess-tester")
-        }
-
-        panel.add(JBScrollPane(messageArea), BorderLayout.CENTER)
-
-        return panel
-    }
-}
-
-/**
- * Dialog to display raw JSON response from the API.
+ * Dialog to display raw output.
  */
 private class RawOutputDialog(
     project: Project,
@@ -799,7 +710,7 @@ private class RawOutputDialog(
 ) : DialogWrapper(project, true) {
 
     init {
-        title = "Raw API Response"
+        title = "Raw Output"
         setOKButtonText("Close")
         setCancelButtonText("Copy to Clipboard")
         init()

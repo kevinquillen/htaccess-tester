@@ -11,7 +11,7 @@ import kotlinx.coroutines.delay
 class StubHtaccessTestService : HtaccessTestService {
 
     override suspend fun test(request: TestRequest): TestResult {
-        // Simulate network delay
+        // Simulate evaluation delay
         delay(500)
 
         val lines = parseRulesIntoStubResults(request.rules)
