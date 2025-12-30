@@ -4,17 +4,17 @@
     <vendor>Kevin Quillen</vendor>
 
     <description><![CDATA[
-    Test .htaccess rewrite rules against a remote evaluation service.
+    Test .htaccess rewrite rules with instant offline evaluation.
 
     <h3>Features</h3>
     <ul>
         <li>Test .htaccess rules against any URL</li>
+        <li>Offline evaluation - no internet required</li>
         <li>Support for custom server variables</li>
         <li>Read rules directly from open .htaccess files</li>
         <li>Save and reload test cases per project</li>
+        <li>Filter and analyze rule evaluation results</li>
     </ul>
-
-    <p><strong>Note:</strong> Requires internet access for remote rule evaluation.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
