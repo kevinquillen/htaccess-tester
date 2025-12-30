@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.kevinquillen"
-version = "1.0.1"
+version = "1.1.0"
 
 kotlin {
     jvmToolchain(17)
@@ -70,16 +70,21 @@ intellijPlatform {
         }
 
         changeNotes = """
+            <h3>1.1.0</h3>
+            <ul>
+                <li>Offline evaluation - no internet connection required</li>
+                <li>Instant results with local htaccess engine</li>
+                <li>RewriteEngine On assumed by default</li>
+                <li>Improved trace table with separate Rule and Response columns</li>
+            </ul>
             <h3>1.0.0</h3>
             <ul>
                 <li>Initial release</li>
-                <li>Test .htaccess rewrite rules against htaccess.madewithlove.com API</li>
                 <li>Support for custom server variables</li>
                 <li>Read rules from open .htaccess files in editor</li>
                 <li>Save and load test cases per project</li>
                 <li>Filter trace results (all, failed, reached, met)</li>
-                <li>Copy summary and view raw API response</li>
-                <li>Automatic retry for transient server errors</li>
+                <li>Copy summary and view raw output</li>
             </ul>
         """.trimIndent()
 
