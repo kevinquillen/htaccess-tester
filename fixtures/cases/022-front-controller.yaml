@@ -1,0 +1,9 @@
+id: front-controller
+url: "http://example.com/user/profile"
+rules: |
+  RewriteEngine On
+  RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/index.php?q=user/profile"

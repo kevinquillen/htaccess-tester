@@ -1,0 +1,13 @@
+id: case-sensitive-default
+url: "http://example.com/FOO"
+rules: |
+  RewriteEngine On
+  RewriteRule ^foo$ /bar [R=301,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/FOO"
+  lines:
+    - contains: "RewriteRule ^foo$"
+      reached: true
+      met: false

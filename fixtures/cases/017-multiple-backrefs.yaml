@@ -1,0 +1,9 @@
+id: multiple-backrefs
+url: "http://example.com/blog/2024/01/post-title"
+rules: |
+  RewriteEngine On
+  RewriteRule ^blog/([0-9]+)/([0-9]+)/(.*)$ /articles.php?year=$1&month=$2&slug=$3 [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/articles.php?year=2024&month=01&slug=post-title"

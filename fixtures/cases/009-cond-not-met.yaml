@@ -1,0 +1,17 @@
+id: cond-not-met
+url: "http://example.com/page"
+rules: |
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^www\.example\.com$
+  RewriteRule ^(.*)$ http://example.com/$1 [R=301,L]
+serverVariables:
+  HTTP_HOST: "example.com"
+expected:
+  outputUrl: "http://example.com/page"
+  lines:
+    - contains: "RewriteCond"
+      reached: true
+      met: false
+    - contains: "RewriteRule"
+      reached: true
+      met: false

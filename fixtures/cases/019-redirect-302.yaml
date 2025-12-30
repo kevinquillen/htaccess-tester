@@ -1,0 +1,10 @@
+id: redirect-302
+url: "http://example.com/temp"
+rules: |
+  RewriteEngine On
+  RewriteRule ^temp$ /permanent [R=302,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/permanent"
+  statusCode: 302

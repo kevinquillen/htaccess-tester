@@ -1,0 +1,11 @@
+id: canonical-non-www
+url: "http://www.example.com/page"
+rules: |
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^www\.example\.com$ [NC]
+  RewriteRule ^(.*)$ http://example.com/$1 [R=301,L]
+serverVariables:
+  HTTP_HOST: "www.example.com"
+expected:
+  outputUrl: "http://example.com/page"
+  statusCode: 301

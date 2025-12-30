@@ -1,0 +1,11 @@
+id: force-https
+url: "http://example.com/secure"
+rules: |
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://example.com/$1 [R=301,L]
+serverVariables:
+  HTTPS: "off"
+expected:
+  outputUrl: "https://example.com/secure"
+  statusCode: 301

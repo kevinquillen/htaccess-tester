@@ -1,0 +1,10 @@
+id: flag-ne-noescape
+url: "http://example.com/path%20with%20spaces"
+rules: |
+  RewriteEngine On
+  RewriteRule ^(.*)$ /new/$1 [R=301,NE,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/new/path%20with%20spaces"
+  statusCode: 301

@@ -1,0 +1,9 @@
+id: combined-nc-qsa
+url: "http://example.com/SEARCH?q=test"
+rules: |
+  RewriteEngine On
+  RewriteRule ^search$ /find?source=redirect [NC,QSA,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/find?source=redirect&q=test"

@@ -1,0 +1,13 @@
+id: backrefs-rule
+url: "http://example.com/product/123"
+rules: |
+  RewriteEngine On
+  RewriteRule ^product/([0-9]+)$ /items.php?id=$1 [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/items.php?id=123"
+  lines:
+    - contains: "RewriteRule ^product/([0-9]+)$"
+      reached: true
+      met: true

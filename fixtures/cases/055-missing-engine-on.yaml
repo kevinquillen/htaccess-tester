@@ -1,0 +1,11 @@
+id: missing-engine-on
+url: "http://example.com/test"
+rules: |
+  RewriteRule ^test$ /result [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/test"
+  lines:
+    - contains: "RewriteRule"
+      reached: false

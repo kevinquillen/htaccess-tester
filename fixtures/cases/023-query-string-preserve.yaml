@@ -1,0 +1,9 @@
+id: query-string-preserve
+url: "http://example.com/search?q=hello&page=2"
+rules: |
+  RewriteEngine On
+  RewriteRule ^search$ /find [L,QSA]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/find?q=hello&page=2"

@@ -1,0 +1,9 @@
+id: query-string-explicit-clear
+url: "http://example.com/page?old=param"
+rules: |
+  RewriteEngine On
+  RewriteRule ^page$ /newpage? [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/newpage"

@@ -1,0 +1,10 @@
+id: flag-f-forbidden
+url: "http://example.com/secret"
+rules: |
+  RewriteEngine On
+  RewriteRule ^secret$ - [F]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/secret"
+  statusCode: 403

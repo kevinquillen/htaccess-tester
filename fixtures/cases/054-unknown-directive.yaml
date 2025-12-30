@@ -1,0 +1,14 @@
+id: unknown-directive
+url: "http://example.com/test"
+rules: |
+  RewriteEngine On
+  SomeUnknownDirective value
+  RewriteRule ^test$ /result [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/result"
+  lines:
+    - contains: "SomeUnknownDirective"
+      reached: true
+      valid: false

@@ -1,0 +1,10 @@
+id: redirect-default
+url: "http://example.com/old"
+rules: |
+  RewriteEngine On
+  RewriteRule ^old$ /new [R,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/new"
+  statusCode: 302

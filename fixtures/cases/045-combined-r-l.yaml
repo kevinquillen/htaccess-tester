@@ -1,0 +1,10 @@
+id: combined-r-l
+url: "http://example.com/old"
+rules: |
+  RewriteEngine On
+  RewriteRule ^old$ /new [R=301,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/new"
+  statusCode: 301

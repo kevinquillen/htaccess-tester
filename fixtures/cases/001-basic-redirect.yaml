@@ -1,0 +1,19 @@
+id: basic-redirect
+url: "http://example.com/foo"
+rules: |
+  RewriteEngine On
+  RewriteRule ^foo$ /bar [R=301,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/bar"
+  statusCode: 301
+  lines:
+    - contains: "RewriteEngine On"
+      reached: true
+      met: true
+      valid: true
+    - contains: "RewriteRule ^foo$ /bar"
+      reached: true
+      met: true
+      valid: true

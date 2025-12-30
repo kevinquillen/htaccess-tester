@@ -1,0 +1,10 @@
+id: no-substitution
+url: "http://example.com/static/image.png"
+rules: |
+  RewriteEngine On
+  RewriteRule ^static/ - [L]
+  RewriteRule ^(.*)$ /index.php?q=$1 [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/static/image.png"

@@ -1,0 +1,9 @@
+id: alternate-flag-names
+url: "http://example.com/test"
+rules: |
+  RewriteEngine On
+  RewriteRule ^test$ /result [last,nocase]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/result"

@@ -1,0 +1,9 @@
+id: complex-regex
+url: "http://example.com/api/v2/users/123/posts"
+rules: |
+  RewriteEngine On
+  RewriteRule ^api/v([0-9]+)/([a-z]+)/([0-9]+)/([a-z]+)$ /api.php?version=$1&resource=$2&id=$3&sub=$4 [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/api.php?version=2&resource=users&id=123&sub=posts"

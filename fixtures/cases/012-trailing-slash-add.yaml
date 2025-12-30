@@ -1,0 +1,10 @@
+id: trailing-slash-add
+url: "http://example.com/directory"
+rules: |
+  RewriteEngine On
+  RewriteRule ^(.+[^/])$ $1/ [R=301,L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/directory/"
+  statusCode: 301

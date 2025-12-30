@@ -1,0 +1,10 @@
+id: negation-cond
+url: "http://example.com/api/endpoint"
+rules: |
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !^/api/
+  RewriteRule ^(.*)$ /index.php?q=$1 [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/api/endpoint"

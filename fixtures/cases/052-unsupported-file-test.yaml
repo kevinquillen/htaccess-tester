@@ -1,0 +1,14 @@
+id: unsupported-file-test
+url: "http://example.com/test"
+rules: |
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^(.*)$ /exists [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/test"
+  lines:
+    - contains: "RewriteCond"
+      reached: true
+      met: false

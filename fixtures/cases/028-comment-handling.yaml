@@ -1,0 +1,15 @@
+id: comment-handling
+url: "http://example.com/test"
+rules: |
+  # This is a comment
+  RewriteEngine On
+  # Another comment
+  RewriteRule ^test$ /result [L]
+serverVariables:
+  SERVER_NAME: "example.com"
+expected:
+  outputUrl: "http://example.com/result"
+  lines:
+    - contains: "# This is a comment"
+      reached: true
+      valid: true
