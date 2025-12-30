@@ -2,8 +2,8 @@ package com.github.kevinquillen.htaccess.ide.toolwindow
 
 import com.github.kevinquillen.htaccess.domain.model.TestRequest
 import com.github.kevinquillen.htaccess.domain.model.TestResult
+import com.github.kevinquillen.htaccess.domain.service.HtaccessLocalService
 import com.github.kevinquillen.htaccess.domain.service.HtaccessTestService
-import com.github.kevinquillen.htaccess.http.HtaccessRemoteClient
 import com.intellij.openapi.application.EDT
 import kotlinx.coroutines.*
 import javax.swing.table.DefaultTableModel
@@ -13,7 +13,7 @@ import javax.swing.table.DefaultTableModel
  * Manages UI state and coordinates between the UI and the test service.
  */
 class HtaccessViewModel(
-    private val testService: HtaccessTestService = HtaccessRemoteClient()
+    private val testService: HtaccessTestService = HtaccessLocalService()
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.EDT)
 

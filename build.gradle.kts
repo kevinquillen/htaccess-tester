@@ -35,7 +35,10 @@ dependencies {
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
     }
 
-    // HTTP client
+    // Offline htaccess engine
+    implementation(project(":htaccess-engine"))
+
+    // HTTP client (kept for potential fallback/comparison)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // JSON serialization
@@ -52,18 +55,17 @@ intellijPlatform {
         name = "Htaccess Tester"
         version = project.version.toString()
         description = """
-            Test .htaccess rewrite rules against a remote evaluation service.
+            Test .htaccess rewrite rules with instant offline evaluation.
 
             Features:
             <ul>
                 <li>Test .htaccess rules against any URL</li>
+                <li>Offline evaluation - no internet required</li>
                 <li>Support for custom server variables</li>
                 <li>Read rules directly from open .htaccess files</li>
                 <li>Save and reload test cases per project</li>
                 <li>Filter and analyze rule evaluation results</li>
             </ul>
-
-            <b>Note:</b> Requires internet access for remote rule evaluation.
         """.trimIndent()
 
         vendor {
