@@ -22,7 +22,7 @@ class RewriteEvaluator(
     private var scheme: String = "http"
     private var host: String = ""
     private var port: Int = -1
-    private var rewriteEngineOn: Boolean = false
+    private var rewriteEngineOn: Boolean = true
     private var stopped: Boolean = false
     private var redirectStatusCode: Int? = null
     private var redirectTarget: String? = null

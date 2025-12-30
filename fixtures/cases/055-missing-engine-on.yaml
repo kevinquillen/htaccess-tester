@@ -5,7 +5,8 @@ rules: |
 serverVariables:
   SERVER_NAME: "example.com"
 expected:
-  outputUrl: "http://example.com/test"
+  outputUrl: "http://example.com/result"
   lines:
     - contains: "RewriteRule"
-      reached: false
+      reached: true
+      met: true
